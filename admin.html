@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#020812">
+
+  <title>Painel Vem Comigo PLAY</title>
+
+  <link rel="stylesheet" href="admin.css">
+</head>
+
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <img src="logo-play.png" alt="Vem Comigo PLAY">
+
+      <div>
+        <strong>Painel Vem Comigo PLAY</strong>
+        <span>Vem Comigo Records</span>
+      </div>
+    </div>
+
+    <a href="index.html" class="back">
+      Ver site
+    </a>
+  </header>
+
+  <main>
+
+    <section class="panel">
+
+      <div class="panel-title">
+        <small>CATÁLOGO</small>
+        <h1>Enviar música</h1>
+        <p>
+          Envie seus próprios louvores e publique direto no Vem Comigo PLAY.
+        </p>
+      </div>
+
+      <form id="musicForm">
+
+        <label>
+          Artista
+          <select id="artist" required>
+            <option value="">Selecione</option>
+
+            <option value="Lucas & Ana Paula">
+              Lucas & Ana Paula
+            </option>
+
+            <option value="Letícia Lima">
+              Letícia Lima
+            </option>
+
+            <option value="Breno Silva">
+              Breno Silva
+            </option>
+
+            <option value="Léo Lima & Fernandes">
+              Léo Lima & Fernandes
+            </option>
+
+            <option value="Lucas Henrique">
+              Lucas Henrique
+            </option>
+
+            <option value="Mathias Fernandes">
+              Mathias Fernandes
+            </option>
+
+            <option value="Noah James">
+              Noah James
+            </option>
+
+            <option value="Luke Carter">
+              Luke Carter
+            </option>
+
+            <option value="Ethan Grace">
+              Ethan Grace
+            </option>
+          </select>
+        </label>
+
+        <label>
+          Álbum
+          <input
+            id="album"
+            type="text"
+            placeholder="Ex: Estrada de Fé"
+            required
+          >
+        </label>
+
+        <label>
+          Nome da música
+          <input
+            id="title"
+            type="text"
+            placeholder="Ex: Deus Está Comigo"
+            required
+          >
+        </label>
+
+        <label>
+          Categoria
+          <select id="category" required>
+            <option value="">Selecione</option>
+            <option value="Adoração">Adoração</option>
+            <option value="Sertanejo Gospel">Sertanejo Gospel</option>
+            <option value="Forró Gospel">Forró Gospel</option>
+            <option value="Arrocha Gospel">Arrocha Gospel</option>
+            <option value="Seresta Gospel">Seresta Gospel</option>
+            <option value="Pop Worship">Pop Worship</option>
+            <option value="Podcasts">Podcasts</option>
+          </select>
+        </label>
+
+        <label class="file-label">
+          Arquivo MP3
+
+          <input
+            id="audioFile"
+            type="file"
+            accept=".mp3,audio/mpeg"
+            required
+          >
+
+          <span id="audioName">
+            Escolher música
+          </span>
+        </label>
+
+        <label class="file-label">
+          Capa
+
+          <input
+            id="coverFile"
+            type="file"
+            accept="image/*"
+          >
+
+          <span id="coverName">
+            Escolher capa
+          </span>
+        </label>
+
+        <div class="progress-area hidden" id="progressArea">
+
+          <div class="progress-info">
+            <span id="progressText">
+              Enviando...
+            </span>
+
+            <strong id="progressPercent">
+              0%
+            </strong>
+          </div>
+
+          <div class="progress-bar">
+            <div id="progressFill"></div>
+          </div>
+
+        </div>
+
+        <button
+          type="submit"
+          id="uploadButton"
+          class="primary"
+        >
+          Enviar música
+        </button>
+
+      </form>
+
+      <div
+        id="status"
+        class="status"
+      ></div>
+
+    </section>
+
+    <section class="panel">
+
+      <div class="panel-title">
+        <small>BIBLIOTECA</small>
+        <h2>Músicas publicadas</h2>
+      </div>
+
+      <div id="musicList" class="music-list">
+
+        <div class="empty">
+          Nenhuma música carregada ainda.
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <script src="admin.js"></script>
+
+</body>
+</html>
