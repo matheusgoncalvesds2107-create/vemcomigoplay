@@ -1,6 +1,20 @@
-const $ = (selector) => document.querySelector(selector);
+/* =========================================================
+   VEM COMIGO PLAY
+   SITE PÚBLICO
+   Catálogo automático via Supabase
+========================================================= */
 
-const audio = $("#audio");
+const SUPABASE_URL =
+  "https://rtlkifpsoviwxgwbbuet.supabase.co";
+
+const SUPABASE_ANON_KEY =
+  "sb_publishable_p95BIFIlAQ02aZYVdDKaNQ_mjtXSBYK";
+
+const $ = (selector) =>
+  document.querySelector(selector);
+
+const audio =
+  $("#audio");
 
 let tracks = [];
 let filteredTracks = [];
@@ -8,150 +22,230 @@ let queue = [];
 let currentIndex = 0;
 let currentTrack = null;
 
-/* =========================
-   UTILIDADES
-========================= */
+/* =========================================================
+   TEMPO
+========================================================= */
 
 function formatTime(seconds) {
+
   if (!Number.isFinite(seconds)) {
     return "0:00";
   }
 
-  const minutes = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
+  const minutes =
+    Math.floor(seconds / 60);
 
-  return `${minutes}:${String(secs).padStart(2, "0")}`;
+  const secs =
+    Math.floor(seconds % 60);
+
+  return (
+    `${minutes}:` +
+    String(secs).padStart(2, "0")
+  );
 }
 
-/* =========================
-   CATÁLOGO
-========================= */
+/* =========================================================
+   CONVERTER DADOS DO SUPABASE
+========================================================= */
+
+function normalizeTrack(track) {
+
+  return {
+    id:
+      track.id,
+
+    title:
+      track.title,
+
+    artist:
+      track.artist,
+
+    album:
+      track.album,
+
+    category:
+      track.category,
+
+    type:
+      track.type || "music",
+
+    audioUrl:
+      track.audio_url,
+
+    downloadUrl:
+      track.audio_url,
+
+    cover:
+      track.cover_url ||
+      "logo-play.png",
+
+    createdAt:
+      track.created_at
+  };
+}
+
+/* =========================================================
+   MOSTRAR CATÁLOGO
+========================================================= */
 
 function renderCatalog(list) {
-  filteredTracks = list;
 
-  const catalog = $("#catalog");
+  filteredTracks =
+    list;
+
+  const catalog =
+    $("#catalog");
 
   if (!list.length) {
+
     catalog.innerHTML = `
       <div class="empty">
-        Nenhum conteúdo encontrado.
+        Nenhuma música publicada ainda.
       </div>
     `;
 
     return;
   }
 
-  catalog.innerHTML = list
-    .map((track) => {
-      const downloadButton = track.downloadUrl
-        ? `
-          <a
-            href="${track.downloadUrl}"
-            download
-            title="Baixar"
-            onclick="event.stopPropagation()"
+  catalog.innerHTML =
+    list
+      .map((track) => {
+
+        return `
+          <article
+            class="track"
+            data-id="${track.id}"
           >
-            ⇩
-          </a>
-        `
-        : "";
 
-      return `
-        <article
-          class="track"
-          data-id="${track.id}"
-        >
+            <div class="art">
 
-          <div class="art">
-            <img
-              src="${track.cover || "logo-play.png"}"
-              alt="${track.title}"
-            >
-          </div>
+              <img
+                src="${track.cover}"
+                alt="${track.title}"
+                onerror="this.src='logo-play.png'"
+              >
 
-          <div class="info">
+            </div>
 
-            <strong>
-              ${track.title}
-            </strong>
+            <div class="info">
 
-            <span>
-              ${track.artist}
-              •
-              ${track.album || track.category}
-            </span>
+              <strong>
+                ${track.title}
+              </strong>
 
-          </div>
+              <span>
+                ${track.artist}
+                •
+                ${track.album || track.category}
+              </span>
 
-          <div class="actions">
+            </div>
 
-            <button
-              class="playOne"
-              aria-label="Tocar ${track.title}"
-            >
-              ▶
-            </button>
+            <div class="actions">
 
-            ${downloadButton}
+              <button
+                class="playOne"
+                aria-label="Tocar"
+              >
+                ▶
+              </button>
 
-          </div>
+              ${
+                track.downloadUrl
+                  ? `
+                    <a
+                      href="${track.downloadUrl}"
+                      download
+                      target="_blank"
+                      title="Baixar"
+                      onclick="event.stopPropagation()"
+                    >
+                      ⇩
+                    </a>
+                  `
+                  : ""
+              }
 
-        </article>
-      `;
-    })
-    .join("");
+            </div>
+
+          </article>
+        `;
+      })
+      .join("");
 
   document
     .querySelectorAll(".track")
     .forEach((element) => {
-      const id = element.dataset.id;
 
-      const playButton =
-        element.querySelector(".playOne");
+      const id =
+        element.dataset.id;
 
-      playButton.onclick = () => {
+      const button =
+        element.querySelector(
+          ".playOne"
+        );
+
+      button.onclick = () => {
         playById(id);
       };
+
+      element
+        .querySelector(".info")
+        .onclick = () => {
+          playById(id);
+        };
     });
 }
 
-/* =========================
-   TOCAR FAIXA
-========================= */
+/* =========================================================
+   TOCAR MÚSICA
+========================================================= */
 
 function playById(id) {
+
   currentTrack =
     tracks.find(
-      (track) => track.id === id
+      (track) =>
+        String(track.id) ===
+        String(id)
     );
 
   if (!currentTrack) {
     return;
   }
 
-  if (currentTrack.type === "podcast") {
+  if (
+    currentTrack.type ===
+    "podcast"
+  ) {
+
     queue =
       tracks.filter(
         (track) =>
-          track.type === "podcast"
+          track.type ===
+          "podcast"
       );
+
   } else {
+
     queue =
       tracks.filter(
         (track) =>
-          track.type === "music"
+          track.type !==
+          "podcast"
       );
   }
 
   currentIndex =
     queue.findIndex(
       (track) =>
-        track.id === id
+        String(track.id) ===
+        String(id)
     );
 
   $("#kind").textContent =
-    currentTrack.type === "podcast"
+    currentTrack.type ===
+    "podcast"
       ? "PODCAST"
       : "LOUVOR";
 
@@ -159,23 +253,16 @@ function playById(id) {
     currentTrack.title;
 
   $("#artist").textContent =
-    currentTrack.artist;
+    `${currentTrack.artist} • ${currentTrack.album || ""}`;
 
   $("#cover").src =
     currentTrack.cover ||
-    "logo-play.svg";
+    "logo-play.png";
 
   if (!currentTrack.audioUrl) {
+
     $("#artist").textContent =
-      `${currentTrack.artist} • áudio ainda não configurado`;
-
-    audio.pause();
-
-    audio.removeAttribute("src");
-
-    audio.load();
-
-    $("#play").textContent = "▶";
+      `${currentTrack.artist} • áudio indisponível`;
 
     return;
   }
@@ -186,18 +273,22 @@ function playById(id) {
   audio
     .play()
     .catch((error) => {
+
       console.log(
-        "O navegador bloqueou a reprodução automática:",
+        "Reprodução aguardando interação:",
         error
       );
     });
+
+  updateMediaSession();
 }
 
-/* =========================
+/* =========================================================
    PRÓXIMA
-========================= */
+========================================================= */
 
 function nextTrack() {
+
   if (!queue.length) {
     return;
   }
@@ -211,11 +302,12 @@ function nextTrack() {
   );
 }
 
-/* =========================
+/* =========================================================
    ANTERIOR
-========================= */
+========================================================= */
 
 function previousTrack() {
+
   if (!queue.length) {
     return;
   }
@@ -233,69 +325,76 @@ function previousTrack() {
   );
 }
 
-/* =========================
-   PRIMEIRO LOUVOR
-========================= */
+/* =========================================================
+   PRIMEIRA MÚSICA
+========================================================= */
 
-function getFirstMusic() {
+function firstMusic() {
+
   return tracks.find(
     (track) =>
-      track.type === "music"
+      track.type !==
+      "podcast"
   );
 }
 
-/* =========================
+/* =========================================================
    ALEATÓRIO
-========================= */
+========================================================= */
 
-function getRandomMusic() {
-  const musicTracks =
+function randomMusic() {
+
+  const musics =
     tracks.filter(
       (track) =>
-        track.type === "music"
+        track.type !==
+        "podcast"
     );
 
-  if (!musicTracks.length) {
+  if (!musics.length) {
     return null;
   }
 
-  const randomIndex =
+  const index =
     Math.floor(
       Math.random() *
-      musicTracks.length
+      musics.length
     );
 
-  return musicTracks[randomIndex];
+  return musics[index];
 }
 
-/* =========================
-   BOTÃO PLAY PRINCIPAL
-========================= */
+/* =========================================================
+   PLAY PRINCIPAL
+========================================================= */
 
 $("#play").onclick = () => {
-  if (!currentTrack) {
-    const firstTrack =
-      getFirstMusic();
 
-    if (firstTrack) {
-      playById(
-        firstTrack.id
-      );
+  if (!currentTrack) {
+
+    const first =
+      firstMusic();
+
+    if (first) {
+      playById(first.id);
     }
 
     return;
   }
 
   if (audio.paused) {
+
     audio.play();
+
   } else {
+
     audio.pause();
   }
 };
 
-/* =========================
+/* =========================================================
    CONTROLES
-========================= */
+========================================================= */
 
 $("#next").onclick =
   nextTrack;
@@ -303,101 +402,103 @@ $("#next").onclick =
 $("#prev").onclick =
   previousTrack;
 
-/* =========================
-   QUANDO TERMINAR
-========================= */
+audio.onended =
+  nextTrack;
 
-audio.onended = () => {
-  nextTrack();
-};
-
-/* =========================
+/* =========================================================
    PLAY / PAUSE
-========================= */
+========================================================= */
 
 audio.onplay = () => {
+
   $("#play").textContent =
     "⏸";
 };
 
 audio.onpause = () => {
+
   $("#play").textContent =
     "▶";
 };
 
-/* =========================
+/* =========================================================
    DURAÇÃO
-========================= */
+========================================================= */
 
 audio.onloadedmetadata =
   () => {
+
     $("#dur").textContent =
       formatTime(
         audio.duration
       );
   };
 
-/* =========================
+/* =========================================================
    PROGRESSO
-========================= */
+========================================================= */
 
-audio.ontimeupdate = () => {
-  $("#cur").textContent =
-    formatTime(
-      audio.currentTime
-    );
+audio.ontimeupdate =
+  () => {
 
-  if (audio.duration) {
-    $("#seek").value =
-      String(
-        (
-          audio.currentTime /
-          audio.duration
-        ) * 100
+    $("#cur").textContent =
+      formatTime(
+        audio.currentTime
       );
-  }
-};
 
-/* =========================
-   MEXER NA BARRA
-========================= */
+    if (audio.duration) {
+
+      $("#seek").value =
+        String(
+          (
+            audio.currentTime /
+            audio.duration
+          ) *
+          100
+        );
+    }
+  };
+
+/* =========================================================
+   BARRA DE PROGRESSO
+========================================================= */
 
 $("#seek").oninput =
   (event) => {
+
     if (!audio.duration) {
       return;
     }
 
-    const percentage =
-      Number(
-        event.target.value
-      );
-
     audio.currentTime =
       (
-        percentage /
+        Number(
+          event.target.value
+        ) /
         100
       ) *
       audio.duration;
   };
 
-/* =========================
+/* =========================================================
    VOLUME
-========================= */
+========================================================= */
 
-audio.volume = 0.85;
+audio.volume =
+  0.85;
 
 $("#volume").oninput =
   (event) => {
+
     audio.volume =
       Number(
         event.target.value
       );
   };
 
-/* =========================
+/* =========================================================
    CATEGORIAS
-========================= */
+========================================================= */
 
 document
   .querySelectorAll(
@@ -412,8 +513,9 @@ document
           ".chips button"
         )
         .forEach(
-          (otherButton) => {
-            otherButton
+          (other) => {
+
+            other
               .classList
               .remove("active");
           }
@@ -429,6 +531,7 @@ document
       if (
         category === "Todos"
       ) {
+
         renderCatalog(
           tracks
         );
@@ -449,12 +552,13 @@ document
     };
   });
 
-/* =========================
+/* =========================================================
    BUSCA
-========================= */
+========================================================= */
 
 $("#searchToggle").onclick =
   () => {
+
     $("#searchBox")
       .classList
       .toggle("hidden");
@@ -464,6 +568,7 @@ $("#searchToggle").onclick =
         .classList
         .contains("hidden")
     ) {
+
       $("#searchInput")
         .focus();
     }
@@ -481,12 +586,13 @@ $("#searchInput").oninput =
       tracks.filter(
         (track) => {
 
-          const text = `
+          const text =
+            `
             ${track.title}
             ${track.artist}
             ${track.album || ""}
             ${track.category}
-          `
+            `
             .toLowerCase();
 
           return text.includes(
@@ -500,73 +606,67 @@ $("#searchInput").oninput =
     );
   };
 
-/* =========================
+/* =========================================================
    TOCAR TUDO
-========================= */
+========================================================= */
 
 $("#playAll").onclick =
   () => {
 
-    const musicTracks =
+    const musics =
       filteredTracks.filter(
         (track) =>
-          track.type ===
-          "music"
+          track.type !==
+          "podcast"
       );
 
-    if (!musicTracks.length) {
+    if (!musics.length) {
       return;
     }
 
     queue =
-      musicTracks;
+      musics;
 
-    currentIndex = 0;
+    currentIndex =
+      0;
 
     playById(
-      musicTracks[0].id
+      musics[0].id
     );
   };
 
-/* =========================
-   BOTÃO HERO
-========================= */
+/* =========================================================
+   HERO
+========================================================= */
 
 $("#heroPlay").onclick =
   () => {
 
-    const firstTrack =
-      getFirstMusic();
+    const first =
+      firstMusic();
 
-    if (firstTrack) {
-      playById(
-        firstTrack.id
-      );
+    if (first) {
+      playById(first.id);
     }
   };
-
-/* =========================
-   ALEATÓRIO HERO
-========================= */
 
 $("#heroShuffle").onclick =
   () => {
 
-    const randomTrack =
-      getRandomMusic();
+    const random =
+      randomMusic();
 
-    if (randomTrack) {
-      playById(
-        randomTrack.id
-      );
+    if (random) {
+      playById(random.id);
     }
   };
 
-/* =========================
+/* =========================================================
    MEDIA SESSION
-========================= */
+========================================================= */
 
 function updateMediaSession() {
+
   if (
     !currentTrack ||
     !("mediaSession" in navigator)
@@ -576,6 +676,7 @@ function updateMediaSession() {
 
   navigator.mediaSession.metadata =
     new MediaMetadata({
+
       title:
         currentTrack.title,
 
@@ -590,80 +691,85 @@ function updateMediaSession() {
         {
           src:
             currentTrack.cover ||
-          "logo-play.png",
-
-          sizes:
-            "512x512"
+            "logo-play.png"
         }
       ]
     });
 }
 
-audio.addEventListener(
-  "play",
-  updateMediaSession
-);
-
 if (
   "mediaSession" in navigator
 ) {
 
-  navigator
-    .mediaSession
+  navigator.mediaSession
     .setActionHandler(
       "play",
-      () => {
-        audio.play();
-      }
+      () => audio.play()
     );
 
-  navigator
-    .mediaSession
+  navigator.mediaSession
     .setActionHandler(
       "pause",
-      () => {
-        audio.pause();
-      }
+      () => audio.pause()
     );
 
-  navigator
-    .mediaSession
+  navigator.mediaSession
     .setActionHandler(
       "nexttrack",
       nextTrack
     );
 
-  navigator
-    .mediaSession
+  navigator.mediaSession
     .setActionHandler(
       "previoustrack",
       previousTrack
     );
 }
 
-/* =========================
-   CARREGAR CATÁLOGO
-========================= */
+/* =========================================================
+   CARREGAR SUPABASE
+========================================================= */
 
 async function loadCatalog() {
+
+  const catalog =
+    $("#catalog");
+
+  catalog.innerHTML = `
+    <div class="empty">
+      Carregando músicas...
+    </div>
+  `;
+
   try {
 
     const response =
       await fetch(
-        `catalog.json?v=${Date.now()}`
-      );
+        `${SUPABASE_URL}/rest/v1/tracks?select=*&order=created_at.desc`,
+        {
+          headers: {
 
-    if (!response.ok) {
-      throw new Error(
-        "Erro ao carregar catalog.json"
+            "apikey":
+              SUPABASE_ANON_KEY
+          }
+        }
       );
-    }
 
     const data =
       await response.json();
 
+    if (!response.ok) {
+
+      throw new Error(
+        data.message ||
+        "Não foi possível carregar as músicas."
+      );
+    }
+
     tracks =
-      data.tracks || [];
+      data.map(
+        normalizeTrack
+      );
 
     renderCatalog(
       tracks
@@ -675,13 +781,16 @@ async function loadCatalog() {
       error
     );
 
-    $("#catalog").innerHTML =
-      `
-        <div class="empty">
-          Não foi possível carregar o catálogo.
-        </div>
-      `;
+    catalog.innerHTML = `
+      <div class="empty">
+        Não foi possível carregar o catálogo.
+      </div>
+    `;
   }
 }
+
+/* =========================================================
+   INICIAR
+========================================================= */
 
 loadCatalog();
