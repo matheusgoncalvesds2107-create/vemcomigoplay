@@ -1,144 +1,445 @@
 <!doctype html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#020812">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1,viewport-fit=cover"
+  >
+
+  <meta
+    name="theme-color"
+    content="#020812"
+  >
 
   <title>Vem Comigo PLAY</title>
+
   <meta
     name="description"
     content="Vem Comigo PLAY — músicas e podcasts da Vem Comigo Records."
   >
 
-  
-  <link rel="stylesheet" href="style.css">
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
 </head>
 
 <body>
 
+  <!-- TOPO -->
+
   <header class="topbar">
+
     <div class="brand">
-      <img src= "logo-play.png" alt="Vem Comigo PLAY">
+
+      <img
+        src="logo-play.png"
+        alt="Vem Comigo PLAY"
+      >
 
       <div>
-        <strong>Vem Comigo PLAY</strong>
-        <span>Vem Comigo Records</span>
+        <strong>
+          Vem Comigo PLAY
+        </strong>
+
+        <span>
+          Vem Comigo Records
+        </span>
       </div>
+
     </div>
 
-    <button id="searchToggle" class="iconbtn" aria-label="Buscar">
+    <button
+      id="searchToggle"
+      class="iconbtn"
+      aria-label="Buscar"
+    >
       ⌕
     </button>
+
   </header>
 
-  <section id="searchBox" class="searchbox hidden">
+
+  <!-- BUSCA -->
+
+  <section
+    id="searchBox"
+    class="searchbox hidden"
+  >
+
     <input
       id="searchInput"
       type="search"
-      placeholder="Buscar música, artista ou podcast"
+      placeholder="Buscar música, artista ou álbum"
     >
+
   </section>
 
-  <nav class="chips" aria-label="Categorias">
-    <button class="active" data-cat="Todos">Tudo</button>
-    <button data-cat="Adoração">Adoração</button>
-    <button data-cat="Sertanejo Gospel">Sertanejo</button>
-    <button data-cat="Forró Gospel">Forró</button>
-    <button data-cat="Arrocha Gospel">Arrocha</button>
-    <button data-cat="Pop Worship">Pop Worship</button>
-    <button data-cat="Podcasts">Podcasts</button>
+
+  <!-- CATEGORIAS -->
+
+  <nav
+    class="chips"
+    aria-label="Categorias"
+  >
+
+    <button
+      class="active"
+      data-cat="Todos"
+    >
+      Tudo
+    </button>
+
+    <button
+      data-cat="Adoração"
+    >
+      Adoração
+    </button>
+
+    <button
+      data-cat="Sertanejo Gospel"
+    >
+      Sertanejo
+    </button>
+
+    <button
+      data-cat="Forró Gospel"
+    >
+      Forró
+    </button>
+
+    <button
+      data-cat="Arrocha Gospel"
+    >
+      Arrocha
+    </button>
+
+    <button
+      data-cat="Seresta Gospel"
+    >
+      Seresta
+    </button>
+
+    <button
+      data-cat="Pop Worship"
+    >
+      Pop Worship
+    </button>
+
+    <button
+      data-cat="Podcasts"
+    >
+      Podcasts
+    </button>
+
   </nav>
+
 
   <main>
 
-    <section class="hero">
-      <small>CATÁLOGO OFICIAL</small>
+    <!-- HERO -->
+
+    <section
+      id="homeHero"
+      class="hero"
+    >
+
+      <small>
+        CATÁLOGO OFICIAL
+      </small>
 
       <h1>
-        Vem Comigo<br>
-        <em>PLAY</em>
+        Vem Comigo
+        <br>
+        <em>
+          PLAY
+        </em>
       </h1>
 
       <p>
-        Só nossas músicas, nossos artistas e nossos podcasts.
+        Só nossas músicas,
+        nossos artistas
+        e nossos podcasts.
       </p>
 
       <div class="hero-actions">
-        <button id="heroPlay">
+
+        <button
+          id="heroPlay"
+        >
           ▶ Ouvir agora
         </button>
 
-        <button id="heroShuffle" class="secondary">
+        <button
+          id="heroShuffle"
+          class="secondary"
+        >
           ⇄ Aleatório
         </button>
+
       </div>
+
     </section>
 
-    <section class="section">
-  <div class="section-head">
-    <div>
-      <small>ARTISTAS</small>
-      <h2>Artistas</h2>
-    </div>
-  </div>
 
-  <div id="artistsGrid" class="albums-grid"></div>
-</section>
+    <!-- ARTISTAS -->
 
-<section class="section">
-  <div class="section-head">
-    <div>
-      <small>ÁLBUNS</small>
-      <h2>Álbuns</h2>
-    </div>
-  </div>
-
-  <div id="albumsGrid" class="albums-grid"></div>
-</section>
+    <section
+      id="artistsSection"
+      class="section"
+    >
 
       <div class="section-head">
+
         <div>
-          <small>DESTAQUES</small>
-          <h2>Louvores em destaque</h2>
+
+          <small>
+            ARTISTAS
+          </small>
+
+          <h2>
+            Artistas
+          </h2>
+
         </div>
 
-        <button id="playAll">
-          Tocar tudo
-        </button>
       </div>
 
-      <div id="catalog" class="tracklist"></div>
+      <div
+        id="artistsGrid"
+        class="albums-grid"
+      ></div>
+
+    </section>
+
+
+    <!-- ÁLBUNS -->
+
+    <section
+      id="albumsSection"
+      class="section"
+    >
+
+      <div class="section-head">
+
+        <div>
+
+          <small>
+            ÁLBUNS
+          </small>
+
+          <h2>
+            Álbuns
+          </h2>
+
+        </div>
+
+      </div>
+
+      <div
+        id="albumsGrid"
+        class="albums-grid"
+      ></div>
+
+    </section>
+
+
+    <!-- TELA DO ÁLBUM -->
+
+    <section
+      id="albumView"
+      class="album-view hidden"
+    >
+
+      <button
+        id="backAlbum"
+        class="album-back"
+      >
+        ← Voltar
+      </button>
+
+      <div
+        class="album-header"
+      >
+
+        <div
+          class="album-hero-cover"
+        >
+
+          <img
+            id="albumViewCover"
+            src="logo-play.png"
+            alt="Capa do álbum"
+          >
+
+        </div>
+
+        <div
+          class="album-hero-info"
+        >
+
+          <small>
+            ÁLBUM
+          </small>
+
+          <h2
+            id="albumViewTitle"
+          >
+            Álbum
+          </h2>
+
+          <h3
+            id="albumViewArtist"
+          >
+            Artista
+          </h3>
+
+          <p
+            id="albumViewMeta"
+          >
+            Categoria • 0 faixas
+          </p>
+
+          <div
+            class="album-actions"
+          >
+
+            <button
+              id="albumPlay"
+              class="album-main-button"
+            >
+              ▶ Tocar álbum
+            </button>
+
+            <button
+              id="albumShuffle"
+              class="album-secondary-button"
+            >
+              ⇄ Aleatório
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div
+        class="album-track-area"
+      >
+
+        <div
+          class="section-head"
+        >
+
+          <div>
+
+            <small>
+              FAIXAS
+            </small>
+
+            <h2>
+              Músicas do álbum
+            </h2>
+
+          </div>
+
+        </div>
+
+        <div
+          id="albumTracks"
+          class="tracklist"
+        ></div>
+
+      </div>
+
+    </section>
+
+
+    <!-- DESTAQUES -->
+
+    <section
+      id="featuredSection"
+      class="section"
+    >
+
+      <div class="section-head">
+
+        <div>
+
+          <small>
+            DESTAQUES
+          </small>
+
+          <h2>
+            Louvores em destaque
+          </h2>
+
+        </div>
+
+        <button
+          id="playAll"
+        >
+          Tocar tudo
+        </button>
+
+      </div>
+
+      <div
+        id="catalog"
+        class="tracklist"
+      ></div>
 
     </section>
 
   </main>
 
-  <footer class="player" id="player">
+
+  <!-- PLAYER -->
+
+  <footer
+    class="player"
+    id="player"
+  >
 
     <img
       id="cover"
-      src="logo-play.svg"
+      src="logo-play.png"
       alt="Capa"
     >
 
-    <div class="player-meta">
+    <div
+      class="player-meta"
+    >
 
-      <small id="kind">
+      <small
+        id="kind"
+      >
         VEM COMIGO PLAY
       </small>
 
-      <strong id="title">
+      <strong
+        id="title"
+      >
         Escolha uma faixa
       </strong>
 
-      <span id="artist">
+      <span
+        id="artist"
+      >
         Player próprio do site
       </span>
 
-      <div class="progress">
+      <div
+        class="progress"
+      >
 
-        <span id="cur">
+        <span
+          id="cur"
+        >
           0:00
         </span>
 
@@ -151,7 +452,9 @@
           aria-label="Progresso"
         >
 
-        <span id="dur">
+        <span
+          id="dur"
+        >
           0:00
         </span>
 
@@ -183,7 +486,9 @@
       ⏭
     </button>
 
-    <div class="volume">
+    <div
+      class="volume"
+    >
 
       <span>
         🔊
@@ -208,7 +513,11 @@
 
   </footer>
 
-  <script src="app.js"></script>
+
+  <script
+    src="app.js"
+  ></script>
 
 </body>
+
 </html>
