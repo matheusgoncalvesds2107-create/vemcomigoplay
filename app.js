@@ -65,7 +65,7 @@ function renderCatalog(list) {
 
           <div class="art">
             <img
-              src="${track.cover || "logo-play.svg"}"
+              src="${track.cover || "logo-play.png"}"
               alt="${track.title}"
             >
           </div>
