@@ -590,7 +590,7 @@ function updateMediaSession() {
         {
           src:
             currentTrack.cover ||
-            "logo-play.svg",
+          "logo-play.png",
 
           sizes:
             "512x512"
