@@ -210,18 +210,16 @@ async function login() {
    TOKEN
 ========================================================= */
 
-async function ensureLogin() {
+async function startAdmin() {
 
-  accessToken =
-    sessionStorage.getItem(
-      "vcplay-token"
-    ) || "";
+  sessionStorage.removeItem("vcplay-token");
 
-  if (accessToken) {
-    return true;
+  const logged =
+    await ensureLogin();
+
+  if (logged) {
+    await loadTracks();
   }
-
-  return await login();
 }
 
 /* =========================================================
