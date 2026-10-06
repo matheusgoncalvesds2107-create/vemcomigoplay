@@ -168,12 +168,14 @@ async function login() {
     const data =
       await response.json();
 
-    if (!response.ok) {
-      throw new Error(
-        data.error_description ||
-        data.msg ||
-        "Não foi possível entrar."
-      );
+       throw new Error(
+       data.error_description ||
+       data.msg ||
+       data.message ||
+       data.error ||
+       JSON.stringify(data) ||
+       "Não foi possível entrar."
+     );
     }
 
     accessToken =
