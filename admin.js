@@ -11,7 +11,7 @@
    - chave anon/public
 ========================================================= */
 
-const SUPABASE_URL = "https://rtlkifpsoviwxgwbbuet.supabase.co/rest/v1/";
+const SUPABASE_URL = "https://rtlkifpsoviwxgwbbuet.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_p95BIFIlAQ02aZYVdDKaNQ_mjtXSBYK";
 
 const BUCKET = "musicas";
