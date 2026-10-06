@@ -1,16 +1,3 @@
-/* =========================================================
-   VEM COMIGO PLAY - PAINEL ADMIN
-   Envia MP3 + capa para o Supabase e publica no catálogo
-========================================================= */
-
-/* =========================================================
-   CONFIGURAÇÃO DO SUPABASE
-   NÃO use a chave service_role aqui.
-   Depois vamos colocar:
-   - URL do projeto
-   - chave anon/public
-========================================================= */
-
 const SUPABASE_URL = "https://rtlkifpsoviwxgwbbuet.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_p95BIFIlAQ02aZYVdDKaNQ_mjtXSBYK";
 
@@ -19,16 +6,11 @@ const BUCKET = "musicas";
 let accessToken = "";
 let publishedTracks = [];
 
-/* =========================================================
-   ATALHO
-========================================================= */
+const $ = (selector) => document.querySelector(selector);
 
-const $ = (selector) =>
-  document.querySelector(selector);
-
-/* =========================================================
+/* =========================
    STATUS
-========================================================= */
+========================= */
 
 function setStatus(message, type = "") {
   const box = $("#status");
@@ -40,29 +22,22 @@ function setStatus(message, type = "") {
     (type ? ` ${type}` : "");
 }
 
-/* =========================================================
+/* =========================
    PROGRESSO
-========================================================= */
+========================= */
 
-function showProgress(
-  percent,
-  message = "Enviando..."
-) {
+function showProgress(percent, message = "Enviando...") {
   $("#progressArea")
     .classList
     .remove("hidden");
 
-  $("#progressPercent")
-    .textContent =
+  $("#progressPercent").textContent =
     `${percent}%`;
 
-  $("#progressText")
-    .textContent =
+  $("#progressText").textContent =
     message;
 
-  $("#progressFill")
-    .style
-    .width =
+  $("#progressFill").style.width =
     `${percent}%`;
 }
 
@@ -72,73 +47,57 @@ function hideProgress() {
       .classList
       .add("hidden");
 
-    $("#progressFill")
-      .style
-      .width =
+    $("#progressFill").style.width =
       "0%";
-  }, 1500);
+  }, 1200);
 }
 
-/* =========================================================
-   NORMALIZAR NOMES
-========================================================= */
+/* =========================
+   SLUG
+========================= */
 
 function slug(text) {
   return text
     .normalize("NFD")
-    .replace(
-      /[\u0300-\u036f]/g,
-      ""
-    )
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
-    .replace(
-      /[^a-z0-9]+/g,
-      "-"
-    )
-    .replace(
-      /^-+|-+$/g,
-      ""
-    );
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
-/* =========================================================
-   LOGIN SUPABASE
-========================================================= */
+/* =========================
+   LOGIN
+========================= */
 
 async function login() {
-  if (
-    SUPABASE_URL.includes(
-      "COLE_AQUI"
-    )
-  ) {
+  sessionStorage.removeItem("vcplay-token");
+  accessToken = "";
+
+  const email =
+    prompt("E-mail do administrador:");
+
+  if (!email) {
     setStatus(
-      "Primeiro precisamos colocar a URL e a chave pública do Supabase.",
+      "Login cancelado.",
       "error"
     );
 
     return false;
   }
 
-  const email =
-    prompt(
-      "E-mail do administrador:"
-    );
-
-  if (!email) {
-    return false;
-  }
-
   const password =
-    prompt(
-      "Senha do administrador:"
-    );
+    prompt("Senha do administrador:");
 
   if (!password) {
+    setStatus(
+      "Senha não informada.",
+      "error"
+    );
+
     return false;
   }
 
   try {
-
     setStatus(
       "Entrando no painel..."
     );
@@ -168,14 +127,19 @@ async function login() {
     const data =
       await response.json();
 
-       throw new Error(
-       data.error_description ||
-       data.msg ||
-       data.message ||
-       data.error ||
-       JSON.stringify(data) ||
-       "Não foi possível entrar."
-     );
+    if (!response.ok) {
+      console.log(
+        "ERRO LOGIN SUPABASE:",
+        data
+      );
+
+      throw new Error(
+        data.error_description ||
+        data.message ||
+        data.msg ||
+        data.error ||
+        `Erro ${response.status}`
+      );
     }
 
     accessToken =
@@ -194,43 +158,28 @@ async function login() {
     return true;
 
   } catch (error) {
-
     console.error(error);
 
     setStatus(
-      error.message,
+      error.message ||
+      "Não foi possível entrar.",
       "error"
+    );
+
+    alert(
+      error.message ||
+      "Não foi possível entrar."
     );
 
     return false;
   }
 }
 
-/* =========================================================
-   TOKEN
-========================================================= */
+/* =========================
+   UPLOAD
+========================= */
 
-async function startAdmin() {
-
-  sessionStorage.removeItem("vcplay-token");
-
-  const logged =
-    await ensureLogin();
-
-  if (logged) {
-    await loadTracks();
-  }
-}
-
-/* =========================================================
-   UPLOAD PARA STORAGE
-========================================================= */
-
-async function uploadFile(
-  file,
-  path
-) {
-
+async function uploadFile(file, path) {
   const response =
     await fetch(
       `${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`,
@@ -262,16 +211,6 @@ async function uploadFile(
       .catch(() => ({}));
 
   if (!response.ok) {
-
-    if (
-      response.status === 401
-    ) {
-      sessionStorage
-        .removeItem(
-          "vcplay-token"
-        );
-    }
-
     throw new Error(
       data.message ||
       data.error ||
@@ -282,9 +221,9 @@ async function uploadFile(
   return data;
 }
 
-/* =========================================================
+/* =========================
    URL PÚBLICA
-========================================================= */
+========================= */
 
 function publicUrl(path) {
   return (
@@ -294,12 +233,11 @@ function publicUrl(path) {
   );
 }
 
-/* =========================================================
-   SALVAR MÚSICA NO BANCO
-========================================================= */
+/* =========================
+   SALVAR NO BANCO
+========================= */
 
 async function saveTrack(track) {
-
   const response =
     await fetch(
       `${SUPABASE_URL}/rest/v1/tracks`,
@@ -321,9 +259,7 @@ async function saveTrack(track) {
         },
 
         body:
-          JSON.stringify(
-            track
-          )
+          JSON.stringify(track)
       }
     );
 
@@ -342,18 +278,12 @@ async function saveTrack(track) {
   return data[0];
 }
 
-/* =========================================================
-   CARREGAR MÚSICAS
-========================================================= */
+/* =========================
+   CARREGAR BIBLIOTECA
+========================= */
 
 async function loadTracks() {
-
-  if (!accessToken) {
-    return;
-  }
-
   try {
-
     const response =
       await fetch(
         `${SUPABASE_URL}/rest/v1/tracks?select=*&order=created_at.desc`,
@@ -380,7 +310,6 @@ async function loadTracks() {
     renderTracks();
 
   } catch (error) {
-
     console.error(error);
 
     setStatus(
@@ -390,19 +319,15 @@ async function loadTracks() {
   }
 }
 
-/* =========================================================
-   MOSTRAR BIBLIOTECA
-========================================================= */
+/* =========================
+   MOSTRAR MÚSICAS
+========================= */
 
 function renderTracks() {
-
   const list =
     $("#musicList");
 
-  if (
-    !publishedTracks.length
-  ) {
-
+  if (!publishedTracks.length) {
     list.innerHTML = `
       <div class="empty">
         Nenhuma música publicada ainda.
@@ -415,7 +340,6 @@ function renderTracks() {
   list.innerHTML =
     publishedTracks
       .map((track) => {
-
         const cover =
           track.cover_url ||
           "logo-play.png";
@@ -477,47 +401,35 @@ function renderTracks() {
       .join("");
 
   document
-    .querySelectorAll(
-      ".preview"
-    )
+    .querySelectorAll(".preview")
     .forEach((button) => {
+      button.onclick = () => {
+        const player =
+          new Audio(
+            button.dataset.url
+          );
 
-      button.onclick =
-        () => {
-
-          const player =
-            new Audio(
-              button.dataset.url
-            );
-
-          player.play();
-        };
+        player.play();
+      };
     });
 
   document
-    .querySelectorAll(
-      ".delete"
-    )
+    .querySelectorAll(".delete")
     .forEach((button) => {
-
-      button.onclick =
-        () =>
-          deleteTrack(
-            button.dataset.id,
-            button.dataset.audio,
-            button.dataset.cover
-          );
+      button.onclick = () =>
+        deleteTrack(
+          button.dataset.id,
+          button.dataset.audio,
+          button.dataset.cover
+        );
     });
 }
 
-/* =========================================================
-   EXCLUIR ARQUIVO DO STORAGE
-========================================================= */
+/* =========================
+   EXCLUIR STORAGE
+========================= */
 
-async function deleteStorageFile(
-  path
-) {
-
+async function deleteStorageFile(path) {
   if (!path) {
     return;
   }
@@ -538,16 +450,15 @@ async function deleteStorageFile(
   );
 }
 
-/* =========================================================
+/* =========================
    EXCLUIR MÚSICA
-========================================================= */
+========================= */
 
 async function deleteTrack(
   id,
   audioPath,
   coverPath
 ) {
-
   const confirmation =
     confirm(
       "Excluir esta música do Vem Comigo PLAY?"
@@ -558,7 +469,6 @@ async function deleteTrack(
   }
 
   try {
-
     setStatus(
       "Excluindo..."
     );
@@ -601,7 +511,6 @@ async function deleteTrack(
     await loadTracks();
 
   } catch (error) {
-
     console.error(error);
 
     setStatus(
@@ -611,15 +520,14 @@ async function deleteTrack(
   }
 }
 
-/* =========================================================
-   NOME DOS ARQUIVOS
-========================================================= */
+/* =========================
+   ARQUIVOS ESCOLHIDOS
+========================= */
 
 $("#audioFile")
   .addEventListener(
     "change",
     () => {
-
       const file =
         $("#audioFile")
           .files[0];
@@ -636,7 +544,6 @@ $("#coverFile")
   .addEventListener(
     "change",
     () => {
-
       const file =
         $("#coverFile")
           .files[0];
@@ -649,22 +556,23 @@ $("#coverFile")
     }
   );
 
-/* =========================================================
+/* =========================
    ENVIAR MÚSICA
-========================================================= */
+========================= */
 
 $("#musicForm")
   .addEventListener(
     "submit",
     async (event) => {
-
       event.preventDefault();
 
-      const logged =
-        await ensureLogin();
+      if (!accessToken) {
+        const logged =
+          await login();
 
-      if (!logged) {
-        return;
+        if (!logged) {
+          return;
+        }
       }
 
       const artist =
@@ -694,9 +602,8 @@ $("#musicForm")
         !category ||
         !audioFile
       ) {
-
         setStatus(
-          "Preencha os campos e escolha o MP3.",
+          "Preencha todos os campos e escolha o MP3.",
           "error"
         );
 
@@ -709,7 +616,6 @@ $("#musicForm")
       button.disabled = true;
 
       try {
-
         setStatus(
           "Preparando envio..."
         );
@@ -764,7 +670,6 @@ $("#musicForm")
           "";
 
         if (coverFile) {
-
           showProgress(
             60,
             "Enviando capa..."
@@ -801,21 +706,13 @@ $("#musicForm")
         );
 
         await saveTrack({
-          title:
-            title,
-
-          artist:
-            artist,
-
-          album:
-            album,
-
-          category:
-            category,
+          title,
+          artist,
+          album,
+          category,
 
           type:
-            category ===
-            "Podcasts"
+            category === "Podcasts"
               ? "podcast"
               : "music",
 
@@ -838,7 +735,7 @@ $("#musicForm")
         );
 
         setStatus(
-          "Música publicada com sucesso no Vem Comigo PLAY.",
+          "Música publicada com sucesso.",
           "ok"
         );
 
@@ -858,7 +755,6 @@ $("#musicForm")
         hideProgress();
 
       } catch (error) {
-
         console.error(error);
 
         setStatus(
@@ -869,21 +765,25 @@ $("#musicForm")
         hideProgress();
 
       } finally {
-
         button.disabled =
           false;
       }
     }
   );
 
-/* =========================================================
-   INICIAR PAINEL
-========================================================= */
+/* =========================
+   INICIAR
+========================= */
 
 async function startAdmin() {
+  sessionStorage.removeItem(
+    "vcplay-token"
+  );
+
+  accessToken = "";
 
   const logged =
-    await ensureLogin();
+    await login();
 
   if (logged) {
     await loadTracks();
