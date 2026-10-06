@@ -1,7 +1,6 @@
 /* =========================================================
    VEM COMIGO PLAY
    SITE PÚBLICO
-   Catálogo automático via Supabase
 ========================================================= */
 
 const SUPABASE_URL =
@@ -45,7 +44,7 @@ function formatTime(seconds) {
 }
 
 /* =========================================================
-   CONVERTER DADOS DO SUPABASE
+   NORMALIZAR DADOS
 ========================================================= */
 
 function normalizeTrack(track) {
@@ -85,7 +84,7 @@ function normalizeTrack(track) {
 }
 
 /* =========================================================
-   MOSTRAR CATÁLOGO
+   CATÁLOGO
 ========================================================= */
 
 function renderCatalog(list) {
@@ -96,11 +95,15 @@ function renderCatalog(list) {
   const catalog =
     $("#catalog");
 
+  if (!catalog) {
+    return;
+  }
+
   if (!list.length) {
 
     catalog.innerHTML = `
       <div class="empty">
-        Nenhuma música publicada ainda.
+        Nenhuma música encontrada.
       </div>
     `;
 
@@ -180,20 +183,32 @@ function renderCatalog(list) {
       const id =
         element.dataset.id;
 
-      const button =
+      const playButton =
         element.querySelector(
           ".playOne"
         );
 
-      button.onclick = () => {
-        playById(id);
-      };
+      if (playButton) {
 
-      element
-        .querySelector(".info")
-        .onclick = () => {
-          playById(id);
-        };
+        playButton.onclick =
+          () => {
+            playById(id);
+          };
+      }
+
+      const info =
+        element.querySelector(
+          ".info"
+        );
+
+      if (info) {
+
+        info.onclick =
+          () => {
+            playById(id);
+          };
+      }
+
     });
 }
 
@@ -368,39 +383,46 @@ function randomMusic() {
    PLAY PRINCIPAL
 ========================================================= */
 
-$("#play").onclick = () => {
+if ($("#play")) {
 
-  if (!currentTrack) {
+  $("#play").onclick = () => {
 
-    const first =
-      firstMusic();
+    if (!currentTrack) {
 
-    if (first) {
-      playById(first.id);
+      const first =
+        firstMusic();
+
+      if (first) {
+        playById(first.id);
+      }
+
+      return;
     }
 
-    return;
-  }
+    if (audio.paused) {
 
-  if (audio.paused) {
+      audio.play();
 
-    audio.play();
+    } else {
 
-  } else {
-
-    audio.pause();
-  }
-};
+      audio.pause();
+    }
+  };
+}
 
 /* =========================================================
    CONTROLES
 ========================================================= */
 
-$("#next").onclick =
-  nextTrack;
+if ($("#next")) {
+  $("#next").onclick =
+    nextTrack;
+}
 
-$("#prev").onclick =
-  previousTrack;
+if ($("#prev")) {
+  $("#prev").onclick =
+    previousTrack;
+}
 
 audio.onended =
   nextTrack;
@@ -411,14 +433,18 @@ audio.onended =
 
 audio.onplay = () => {
 
-  $("#play").textContent =
-    "⏸";
+  if ($("#play")) {
+    $("#play").textContent =
+      "⏸";
+  }
 };
 
 audio.onpause = () => {
 
-  $("#play").textContent =
-    "▶";
+  if ($("#play")) {
+    $("#play").textContent =
+      "▶";
+  }
 };
 
 /* =========================================================
@@ -428,10 +454,13 @@ audio.onpause = () => {
 audio.onloadedmetadata =
   () => {
 
-    $("#dur").textContent =
-      formatTime(
-        audio.duration
-      );
+    if ($("#dur")) {
+
+      $("#dur").textContent =
+        formatTime(
+          audio.duration
+        );
+    }
   };
 
 /* =========================================================
@@ -441,12 +470,18 @@ audio.onloadedmetadata =
 audio.ontimeupdate =
   () => {
 
-    $("#cur").textContent =
-      formatTime(
-        audio.currentTime
-      );
+    if ($("#cur")) {
 
-    if (audio.duration) {
+      $("#cur").textContent =
+        formatTime(
+          audio.currentTime
+        );
+    }
+
+    if (
+      audio.duration &&
+      $("#seek")
+    ) {
 
       $("#seek").value =
         String(
@@ -463,22 +498,25 @@ audio.ontimeupdate =
    BARRA DE PROGRESSO
 ========================================================= */
 
-$("#seek").oninput =
-  (event) => {
+if ($("#seek")) {
 
-    if (!audio.duration) {
-      return;
-    }
+  $("#seek").oninput =
+    (event) => {
 
-    audio.currentTime =
-      (
-        Number(
-          event.target.value
-        ) /
-        100
-      ) *
-      audio.duration;
-  };
+      if (!audio.duration) {
+        return;
+      }
+
+      audio.currentTime =
+        (
+          Number(
+            event.target.value
+          ) /
+          100
+        ) *
+        audio.duration;
+    };
+}
 
 /* =========================================================
    VOLUME
@@ -487,14 +525,17 @@ $("#seek").oninput =
 audio.volume =
   0.85;
 
-$("#volume").oninput =
-  (event) => {
+if ($("#volume")) {
 
-    audio.volume =
-      Number(
-        event.target.value
-      );
-  };
+  $("#volume").oninput =
+    (event) => {
+
+      audio.volume =
+        Number(
+          event.target.value
+        );
+    };
+}
 
 /* =========================================================
    CATEGORIAS
@@ -536,6 +577,8 @@ document
           tracks
         );
 
+        renderAlbums();
+
         return;
       }
 
@@ -556,110 +599,490 @@ document
    BUSCA
 ========================================================= */
 
-$("#searchToggle").onclick =
-  () => {
+if ($("#searchToggle")) {
 
-    $("#searchBox")
-      .classList
-      .toggle("hidden");
+  $("#searchToggle").onclick =
+    () => {
 
-    if (
-      !$("#searchBox")
+      $("#searchBox")
         .classList
-        .contains("hidden")
-    ) {
+        .toggle("hidden");
 
-      $("#searchInput")
-        .focus();
-    }
-  };
+      if (
+        !$("#searchBox")
+          .classList
+          .contains("hidden")
+      ) {
 
-$("#searchInput").oninput =
-  (event) => {
+        $("#searchInput")
+          .focus();
+      }
+    };
+}
 
-    const query =
-      event.target.value
-        .toLowerCase()
-        .trim();
+if ($("#searchInput")) {
 
-    const filtered =
-      tracks.filter(
-        (track) => {
+  $("#searchInput").oninput =
+    (event) => {
 
-          const text =
-            `
-            ${track.title}
-            ${track.artist}
-            ${track.album || ""}
-            ${track.category}
-            `
-            .toLowerCase();
+      const query =
+        event.target.value
+          .toLowerCase()
+          .trim();
 
-          return text.includes(
-            query
-          );
-        }
+      const filtered =
+        tracks.filter(
+          (track) => {
+
+            const text =
+              `
+              ${track.title}
+              ${track.artist}
+              ${track.album || ""}
+              ${track.category}
+              `
+              .toLowerCase();
+
+            return text.includes(
+              query
+            );
+          }
+        );
+
+      renderCatalog(
+        filtered
       );
-
-    renderCatalog(
-      filtered
-    );
-  };
+    };
+}
 
 /* =========================================================
    TOCAR TUDO
 ========================================================= */
 
-$("#playAll").onclick =
-  () => {
+if ($("#playAll")) {
 
-    const musics =
-      filteredTracks.filter(
-        (track) =>
-          track.type !==
-          "podcast"
+  $("#playAll").onclick =
+    () => {
+
+      const musics =
+        filteredTracks.filter(
+          (track) =>
+            track.type !==
+            "podcast"
+        );
+
+      if (!musics.length) {
+        return;
+      }
+
+      queue =
+        musics;
+
+      currentIndex =
+        0;
+
+      playById(
+        musics[0].id
       );
-
-    if (!musics.length) {
-      return;
-    }
-
-    queue =
-      musics;
-
-    currentIndex =
-      0;
-
-    playById(
-      musics[0].id
-    );
-  };
+    };
+}
 
 /* =========================================================
    HERO
 ========================================================= */
 
-$("#heroPlay").onclick =
-  () => {
+if ($("#heroPlay")) {
 
-    const first =
-      firstMusic();
+  $("#heroPlay").onclick =
+    () => {
 
-    if (first) {
-      playById(first.id);
-    }
-  };
+      const first =
+        firstMusic();
 
-$("#heroShuffle").onclick =
-  () => {
+      if (first) {
+        playById(first.id);
+      }
+    };
+}
 
-    const random =
-      randomMusic();
+if ($("#heroShuffle")) {
 
-    if (random) {
-      playById(random.id);
-    }
-  };
+  $("#heroShuffle").onclick =
+    () => {
+
+      const random =
+        randomMusic();
+
+      if (random) {
+        playById(random.id);
+      }
+    };
+}
+
+/* =========================================================
+   CAPA DO ARTISTA
+========================================================= */
+
+function getArtistCover(
+  artistName
+) {
+
+  const track =
+    tracks.find(
+      (track) =>
+        track.artist ===
+          artistName &&
+        track.cover
+    );
+
+  return track
+    ? track.cover
+    : "logo-play.png";
+}
+
+/* =========================================================
+   ARTISTAS
+========================================================= */
+
+function renderArtists() {
+
+  const container =
+    $("#artistsGrid");
+
+  if (!container) {
+    return;
+  }
+
+  const artists =
+    [
+      ...new Set(
+        tracks
+          .filter(
+            (track) =>
+              track.type !==
+              "podcast"
+          )
+          .map(
+            (track) =>
+              track.artist
+          )
+      )
+    ];
+
+  if (!artists.length) {
+
+    container.innerHTML = `
+      <div class="empty">
+        Nenhum artista publicado.
+      </div>
+    `;
+
+    return;
+  }
+
+  container.innerHTML =
+    artists
+      .map((artist) => {
+
+        const artistTracks =
+          tracks.filter(
+            (track) =>
+              track.artist ===
+                artist &&
+              track.type !==
+                "podcast"
+          );
+
+        const albums =
+          new Set(
+            artistTracks.map(
+              (track) =>
+                track.album
+            )
+          );
+
+        return `
+          <article
+            class="artist-card"
+            data-artist="${artist}"
+          >
+
+            <div
+              class="artist-cover"
+            >
+
+              <img
+                src="${getArtistCover(artist)}"
+                alt="${artist}"
+                onerror="this.src='logo-play.png'"
+              >
+
+            </div>
+
+            <div
+              class="artist-info"
+            >
+
+              <strong>
+                ${artist}
+              </strong>
+
+              <span>
+                ${albums.size}
+                ${
+                  albums.size === 1
+                    ? "álbum"
+                    : "álbuns"
+                }
+              </span>
+
+            </div>
+
+          </article>
+        `;
+      })
+      .join("");
+
+  document
+    .querySelectorAll(
+      ".artist-card"
+    )
+    .forEach((card) => {
+
+      card.onclick = () => {
+
+        const artist =
+          card.dataset.artist;
+
+        const artistTracks =
+          tracks.filter(
+            (track) =>
+              track.artist ===
+              artist
+          );
+
+        renderCatalog(
+          artistTracks
+        );
+
+        renderAlbums(
+          artist
+        );
+
+        const albums =
+          $("#albumsGrid");
+
+        if (albums) {
+
+          albums.scrollIntoView({
+            behavior:
+              "smooth",
+
+            block:
+              "start"
+          });
+        }
+      };
+    });
+}
+
+/* =========================================================
+   ÁLBUNS
+========================================================= */
+
+function renderAlbums(
+  selectedArtist = ""
+) {
+
+  const container =
+    $("#albumsGrid");
+
+  if (!container) {
+    return;
+  }
+
+  let sourceTracks =
+    tracks.filter(
+      (track) =>
+        track.type !==
+        "podcast"
+    );
+
+  if (selectedArtist) {
+
+    sourceTracks =
+      sourceTracks.filter(
+        (track) =>
+          track.artist ===
+          selectedArtist
+      );
+  }
+
+  const albumMap =
+    new Map();
+
+  sourceTracks
+    .forEach((track) => {
+
+      const key =
+        `${track.artist}|||${track.album}`;
+
+      if (
+        !albumMap.has(key)
+      ) {
+
+        albumMap.set(
+          key,
+          {
+            artist:
+              track.artist,
+
+            album:
+              track.album,
+
+            category:
+              track.category,
+
+            cover:
+              track.cover ||
+              "logo-play.png",
+
+            tracks: []
+          }
+        );
+      }
+
+      albumMap
+        .get(key)
+        .tracks
+        .push(track);
+    });
+
+  const albums =
+    Array.from(
+      albumMap.values()
+    );
+
+  if (!albums.length) {
+
+    container.innerHTML = `
+      <div class="empty">
+        Nenhum álbum publicado.
+      </div>
+    `;
+
+    return;
+  }
+
+  container.innerHTML =
+    albums
+      .map((album) => {
+
+        return `
+          <article
+            class="album-card"
+            data-artist="${album.artist}"
+            data-album="${album.album}"
+          >
+
+            <div
+              class="album-cover"
+            >
+
+              <img
+                src="${album.cover}"
+                alt="${album.album}"
+                onerror="this.src='logo-play.png'"
+              >
+
+            </div>
+
+            <div
+              class="album-info"
+            >
+
+              <strong>
+                ${album.album}
+              </strong>
+
+              <span>
+                ${album.artist}
+              </span>
+
+              <span>
+                ${album.tracks.length}
+                ${
+                  album.tracks.length === 1
+                    ? "faixa"
+                    : "faixas"
+                }
+              </span>
+
+            </div>
+
+          </article>
+        `;
+      })
+      .join("");
+
+  document
+    .querySelectorAll(
+      ".album-card"
+    )
+    .forEach((card) => {
+
+      card.onclick = () => {
+
+        document
+          .querySelectorAll(
+            ".album-card"
+          )
+          .forEach(
+            (other) =>
+              other
+                .classList
+                .remove("active")
+          );
+
+        card
+          .classList
+          .add("active");
+
+        const artist =
+          card.dataset.artist;
+
+        const album =
+          card.dataset.album;
+
+        const albumTracks =
+          tracks.filter(
+            (track) =>
+              track.artist ===
+                artist &&
+              track.album ===
+                album
+          );
+
+        renderCatalog(
+          albumTracks
+        );
+
+        const catalog =
+          $("#catalog");
+
+        if (catalog) {
+
+          catalog.scrollIntoView({
+            behavior:
+              "smooth",
+
+            block:
+              "start"
+          });
+        }
+      };
+    });
+}
 
 /* =========================================================
    MEDIA SESSION
@@ -669,57 +1092,69 @@ function updateMediaSession() {
 
   if (
     !currentTrack ||
-    !("mediaSession" in navigator)
+    !(
+      "mediaSession"
+      in navigator
+    )
   ) {
     return;
   }
 
-  navigator.mediaSession.metadata =
-    new MediaMetadata({
+  navigator
+    .mediaSession
+    .metadata =
+      new MediaMetadata({
 
-      title:
-        currentTrack.title,
+        title:
+          currentTrack.title,
 
-      artist:
-        currentTrack.artist,
+        artist:
+          currentTrack.artist,
 
-      album:
-        currentTrack.album ||
-        "Vem Comigo Records",
+        album:
+          currentTrack.album ||
+          "Vem Comigo Records",
 
-      artwork: [
-        {
-          src:
-            currentTrack.cover ||
-            "logo-play.png"
-        }
-      ]
-    });
+        artwork: [
+          {
+            src:
+              currentTrack.cover ||
+              "logo-play.png"
+          }
+        ]
+      });
 }
 
 if (
-  "mediaSession" in navigator
+  "mediaSession"
+  in navigator
 ) {
 
-  navigator.mediaSession
+  navigator
+    .mediaSession
     .setActionHandler(
       "play",
-      () => audio.play()
+      () =>
+        audio.play()
     );
 
-  navigator.mediaSession
+  navigator
+    .mediaSession
     .setActionHandler(
       "pause",
-      () => audio.pause()
+      () =>
+        audio.pause()
     );
 
-  navigator.mediaSession
+  navigator
+    .mediaSession
     .setActionHandler(
       "nexttrack",
       nextTrack
     );
 
-  navigator.mediaSession
+  navigator
+    .mediaSession
     .setActionHandler(
       "previoustrack",
       previousTrack
@@ -727,7 +1162,7 @@ if (
 }
 
 /* =========================================================
-   CARREGAR SUPABASE
+   CARREGAR CATÁLOGO
 ========================================================= */
 
 async function loadCatalog() {
@@ -735,11 +1170,14 @@ async function loadCatalog() {
   const catalog =
     $("#catalog");
 
-  catalog.innerHTML = `
-    <div class="empty">
-      Carregando músicas...
-    </div>
-  `;
+  if (catalog) {
+
+    catalog.innerHTML = `
+      <div class="empty">
+        Carregando músicas...
+      </div>
+    `;
+  }
 
   try {
 
@@ -771,6 +1209,10 @@ async function loadCatalog() {
         normalizeTrack
       );
 
+    renderArtists();
+
+    renderAlbums();
+
     renderCatalog(
       tracks
     );
@@ -781,11 +1223,14 @@ async function loadCatalog() {
       error
     );
 
-    catalog.innerHTML = `
-      <div class="empty">
-        Não foi possível carregar o catálogo.
-      </div>
-    `;
+    if (catalog) {
+
+      catalog.innerHTML = `
+        <div class="empty">
+          Não foi possível carregar o catálogo.
+        </div>
+      `;
+    }
   }
 }
 
