@@ -1,19 +1,34 @@
 <!doctype html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="utf-8">
+
   <meta
     name="viewport"
     content="width=device-width,initial-scale=1,viewport-fit=cover"
   >
-  <meta name="theme-color" content="#020812">
 
-  <title>Painel Vem Comigo PLAY</title>
+  <meta
+    name="theme-color"
+    content="#020812"
+  >
 
-  <link rel="stylesheet" href="admin.css">
+  <title>
+    Painel Vem Comigo PLAY
+  </title>
+
+  <link
+    rel="stylesheet"
+    href="admin.css"
+  >
 </head>
 
 <body>
+
+  <!-- =========================
+       TOPO
+  ========================== -->
 
   <header class="topbar">
 
@@ -25,6 +40,7 @@
       >
 
       <div>
+
         <strong>
           Painel Vem Comigo PLAY
         </strong>
@@ -32,9 +48,11 @@
         <span>
           Vem Comigo Records
         </span>
+
       </div>
 
     </div>
+
 
     <a
       href="index.html"
@@ -48,9 +66,10 @@
 
   <main>
 
-    <!-- =========================
-         ENVIAR MÚSICA
-    ========================== -->
+
+    <!-- =====================================================
+         PUBLICAR MÚSICA
+    ====================================================== -->
 
     <section class="panel">
 
@@ -74,9 +93,11 @@
 
       <form id="musicForm">
 
-        <!-- ARTISTA LIVRE -->
+
+        <!-- ARTISTA -->
 
         <label>
+
           Artista
 
           <input
@@ -118,6 +139,7 @@
         <!-- ÁLBUM -->
 
         <label>
+
           Álbum
 
           <input
@@ -133,6 +155,7 @@
         <!-- MÚSICA -->
 
         <label>
+
           Nome da música
 
           <input
@@ -148,6 +171,7 @@
         <!-- CATEGORIA -->
 
         <label>
+
           Categoria
 
           <select
@@ -211,6 +235,7 @@
         <!-- TEMA DA LETRA -->
 
         <label>
+
           Tema da letra
 
           <input
@@ -225,12 +250,13 @@
         <!-- LETRA -->
 
         <label>
+
           Letra da música
 
           <textarea
             id="lyrics"
-            placeholder="A letra pode ser gerada automaticamente ou colada aqui."
             rows="18"
+            placeholder="A letra pode ser gerada automaticamente ou colada aqui."
           ></textarea>
 
         </label>
@@ -254,6 +280,7 @@
             ✨ Gerar letra automaticamente
           </button>
 
+
           <button
             type="button"
             id="clearLyricsButton"
@@ -272,8 +299,6 @@
 
         </div>
 
-
-        <!-- STATUS DA LETRA -->
 
         <div
           id="lyricsStatus"
@@ -323,8 +348,8 @@
         <!-- PROGRESSO -->
 
         <div
-          class="progress-area hidden"
           id="progressArea"
+          class="progress-area hidden"
         >
 
           <div class="progress-info">
@@ -339,6 +364,7 @@
 
           </div>
 
+
           <div class="progress-bar">
 
             <div id="progressFill"></div>
@@ -347,8 +373,6 @@
 
         </div>
 
-
-        <!-- PUBLICAR -->
 
         <button
           type="submit"
@@ -370,9 +394,340 @@
 
 
 
-    <!-- =========================
+    <!-- =====================================================
+         SINCRONIZAR LETRA
+    ====================================================== -->
+
+    <section class="panel">
+
+      <div class="panel-title">
+
+        <small>
+          LETRAS
+        </small>
+
+        <h2>
+          Sincronizar letra
+        </h2>
+
+        <p>
+          Toque a música e marque o momento
+          em que cada linha começa.
+          Depois salve a sincronização.
+        </p>
+
+      </div>
+
+
+      <!-- ESCOLHER MÚSICA -->
+
+      <label>
+
+        Música
+
+        <select id="syncTrackSelect">
+
+          <option value="">
+            Selecione uma música publicada
+          </option>
+
+        </select>
+
+      </label>
+
+
+      <!-- DADOS DA FAIXA -->
+
+      <div
+        id="syncTrackInfo"
+        style="
+          margin-top:14px;
+          padding:14px;
+          background:#ffffff06;
+          border:1px solid #ffffff10;
+          border-radius:15px;
+          display:none;
+        "
+      >
+
+        <strong
+          id="syncTrackTitle"
+          style="
+            display:block;
+            font-size:17px;
+          "
+        >
+          Música
+        </strong>
+
+        <span
+          id="syncTrackArtist"
+          style="
+            display:block;
+            margin-top:4px;
+            color:#9aa8b8;
+            font-size:12px;
+          "
+        >
+          Artista
+        </span>
+
+      </div>
+
+
+      <!-- PLAYER DE SINCRONIZAÇÃO -->
+
+      <div
+        id="syncPlayerArea"
+        style="
+          margin-top:16px;
+          padding:16px;
+          background:#081523;
+          border:1px solid #ffffff12;
+          border-radius:16px;
+        "
+      >
+
+        <audio
+          id="syncAudio"
+          preload="metadata"
+          style="
+            width:100%;
+          "
+          controls
+        ></audio>
+
+
+        <div
+          style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:10px;
+            margin-top:10px;
+            font-size:12px;
+          "
+        >
+
+          <span>
+            Tempo atual:
+          </span>
+
+          <strong
+            id="syncCurrentTime"
+            style="
+              color:#ffd36b;
+              font-size:16px;
+            "
+          >
+            0:00.0
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <!-- LINHA ATUAL -->
+
+      <div
+        style="
+          margin-top:18px;
+        "
+      >
+
+        <small
+          style="
+            color:#f0ad2f;
+            font-weight:900;
+            letter-spacing:1px;
+          "
+        >
+          LINHA ATUAL
+        </small>
+
+
+        <div
+          id="currentSyncLine"
+          style="
+            margin-top:8px;
+            min-height:70px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            text-align:center;
+            padding:16px;
+            border-radius:15px;
+            background:#0d2033;
+            border:1px solid #f0ad2f44;
+            font-size:18px;
+            font-weight:700;
+          "
+        >
+          Escolha uma música.
+        </div>
+
+      </div>
+
+
+      <!-- BOTÃO MARCAR -->
+
+      <div
+        style="
+          display:grid;
+          grid-template-columns:1fr 1fr;
+          gap:10px;
+          margin-top:14px;
+        "
+      >
+
+        <button
+          type="button"
+          id="markSyncButton"
+          class="primary"
+          disabled
+        >
+          ⏱ Marcar esta linha
+        </button>
+
+
+        <button
+          type="button"
+          id="undoSyncButton"
+          style="
+            border:1px solid #ffffff20;
+            background:#102033;
+            color:#fff;
+            border-radius:14px;
+            padding:14px;
+            font-weight:800;
+            cursor:pointer;
+          "
+          disabled
+        >
+          ↶ Voltar uma linha
+        </button>
+
+      </div>
+
+
+      <!-- PROGRESSO DAS LINHAS -->
+
+      <div
+        style="
+          margin-top:16px;
+        "
+      >
+
+        <div
+          style="
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:10px;
+            margin-bottom:7px;
+            font-size:12px;
+          "
+        >
+
+          <span>
+            Progresso da letra
+          </span>
+
+          <strong id="syncProgressText">
+            0 / 0
+          </strong>
+
+        </div>
+
+
+        <div class="progress-bar">
+
+          <div
+            id="syncProgressFill"
+            style="
+              width:0%;
+            "
+          ></div>
+
+        </div>
+
+      </div>
+
+
+      <!-- LISTA DAS LINHAS -->
+
+      <div
+        id="syncLines"
+        style="
+          display:grid;
+          gap:7px;
+          margin-top:18px;
+          max-height:430px;
+          overflow:auto;
+        "
+      >
+
+        <div class="empty">
+          Escolha uma música com letra.
+        </div>
+
+      </div>
+
+
+      <!-- CONTROLES -->
+
+      <div
+        style="
+          display:flex;
+          gap:10px;
+          flex-wrap:wrap;
+          margin-top:18px;
+        "
+      >
+
+        <button
+          type="button"
+          id="restartSyncButton"
+          style="
+            border:1px solid #ffffff20;
+            background:#102033;
+            color:#fff;
+            border-radius:14px;
+            padding:14px 16px;
+            font-weight:800;
+            cursor:pointer;
+          "
+          disabled
+        >
+          ↻ Recomeçar sincronização
+        </button>
+
+
+        <button
+          type="button"
+          id="saveSyncButton"
+          class="primary"
+          disabled
+        >
+          💾 Salvar letra sincronizada
+        </button>
+
+      </div>
+
+
+      <div
+        id="syncStatus"
+        class="status"
+      ></div>
+
+    </section>
+
+
+
+    <!-- =====================================================
          BIBLIOTECA
-    ========================== -->
+    ====================================================== -->
 
     <section class="panel">
 
@@ -413,9 +768,9 @@
   <script src="admin.js"></script>
 
 
-  <!-- =========================
-       CONTROLES BÁSICOS DA LETRA
-  ========================== -->
+  <!-- =====================================================
+       CONTROLES DA LETRA
+  ====================================================== -->
 
   <script>
 
@@ -440,37 +795,50 @@
       );
 
 
-    clearLyricsButton.onclick =
-      () => {
+    if (clearLyricsButton) {
 
-        lyricsBox.value = "";
+      clearLyricsButton.onclick =
+        () => {
 
-        lyricsStatus.textContent =
-          "Letra limpa.";
+          lyricsBox.value =
+            "";
 
-      };
+          lyricsBox.dataset.generated =
+            "false";
+
+          lyricsStatus.textContent =
+            "Letra limpa.";
+
+        };
+
+    }
 
 
-    generateLyricsButton.onclick =
-      () => {
+    if (generateLyricsButton) {
 
-        if (
-          typeof window.generateAutomaticLyrics
-          === "function"
-        ) {
+      generateLyricsButton.onclick =
+        () => {
 
-          window.generateAutomaticLyrics();
+          if (
+            typeof window.generateAutomaticLyrics
+            === "function"
+          ) {
 
-          return;
+            window.generateAutomaticLyrics();
 
-        }
+            return;
 
-        lyricsStatus.textContent =
-          "O gerador será ativado no admin.js.";
+          }
 
-      };
+          lyricsStatus.textContent =
+            "O gerador será ativado no admin.js.";
+
+        };
+
+    }
 
   </script>
 
 </body>
+
 </html>
