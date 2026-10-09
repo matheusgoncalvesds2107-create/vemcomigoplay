@@ -1,0 +1,935 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1,viewport-fit=cover"
+  >
+
+  <meta
+    name="theme-color"
+    content="#020812"
+  >
+
+  <title>Vem Comigo PLAY</title>
+
+  <meta
+    name="description"
+    content="Vem Comigo PLAY — músicas e podcasts da Vem Comigo Records."
+  >
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+</head>
+
+<body>
+
+  <!-- =====================================================
+       TOPO
+  ====================================================== -->
+
+  <header class="topbar">
+
+    <div class="brand">
+
+      <img
+        src="logo-play.png"
+        alt="Vem Comigo PLAY"
+      >
+
+      <div>
+
+        <strong>
+          Vem Comigo PLAY
+        </strong>
+
+        <span>
+          Vem Comigo Records
+        </span>
+
+      </div>
+
+    </div>
+
+
+    <div class="top-actions">
+
+      <button
+        id="libraryToggle"
+        class="iconbtn"
+        aria-label="Minha Biblioteca"
+        title="Minha Biblioteca"
+      >
+        ♡
+      </button>
+
+      <button
+        id="searchToggle"
+        class="iconbtn"
+        aria-label="Buscar"
+        title="Buscar"
+      >
+        ⌕
+      </button>
+
+    </div>
+
+  </header>
+
+
+  <!-- =====================================================
+       BUSCA
+  ====================================================== -->
+
+  <section
+    id="searchBox"
+    class="searchbox hidden"
+  >
+
+    <input
+      id="searchInput"
+      type="search"
+      placeholder="Buscar música, artista ou álbum"
+    >
+
+  </section>
+
+
+  <!-- =====================================================
+       CATEGORIAS
+  ====================================================== -->
+
+  <nav
+    class="chips"
+    aria-label="Categorias"
+  >
+
+    <button
+      class="active"
+      data-cat="Todos"
+    >
+      Tudo
+    </button>
+
+    <button data-cat="Adoração">
+      Adoração
+    </button>
+
+    <button data-cat="Sertanejo Gospel">
+      Sertanejo
+    </button>
+
+    <button data-cat="Forró Gospel">
+      Forró
+    </button>
+
+    <button data-cat="Arrocha Gospel">
+      Arrocha
+    </button>
+
+    <button data-cat="Seresta Gospel">
+      Seresta
+    </button>
+
+    <button data-cat="Pop Worship">
+      Pop Worship
+    </button>
+
+    <button data-cat="Christian Pop">
+      Christian Pop
+    </button>
+
+    <button data-cat="Acoustic Worship">
+      Acoustic Worship
+    </button>
+
+    <button data-cat="Bachata Gospel">
+      Bachata Gospel
+    </button>
+
+    <button data-cat="Gospel Vaqueiro">
+      Gospel Vaqueiro
+    </button>
+
+    <button data-cat="Podcasts">
+      Podcasts
+    </button>
+
+  </nav>
+
+
+  <main>
+
+    <!-- =====================================================
+         HOME
+    ====================================================== -->
+
+    <section
+      id="homeHero"
+      class="hero"
+    >
+
+      <small>
+        CATÁLOGO OFICIAL
+      </small>
+
+      <h1>
+        Vem Comigo
+        <br>
+        <em>PLAY</em>
+      </h1>
+
+      <p>
+        Músicas, artistas e podcasts
+        da Vem Comigo Records.
+      </p>
+
+
+      <div class="hero-actions">
+
+        <button id="heroPlay">
+          ▶ Ouvir agora
+        </button>
+
+        <button
+          id="heroShuffle"
+          class="secondary"
+        >
+          ⇄ Aleatório
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         MINHA BIBLIOTECA
+    ====================================================== -->
+
+    <section
+      id="librarySection"
+      class="section hidden"
+    >
+
+      <div class="library-header">
+
+        <button
+          id="closeLibrary"
+          class="album-back"
+        >
+          ← Voltar
+        </button>
+
+        <small>
+          MINHA BIBLIOTECA
+        </small>
+
+        <h1>
+          Sua música
+        </h1>
+
+        <p>
+          Favoritos e playlists salvos neste aparelho.
+        </p>
+
+      </div>
+
+
+      <div class="library-tabs">
+
+        <button
+          id="favoritesTab"
+          class="library-tab active"
+        >
+          ❤️ Favoritos
+        </button>
+
+        <button
+          id="playlistsTab"
+          class="library-tab"
+        >
+          ♪ Playlists
+        </button>
+
+      </div>
+
+
+      <!-- FAVORITOS -->
+
+      <div
+        id="favoritesView"
+        class="library-view"
+      >
+
+        <div class="section-head">
+
+          <div>
+
+            <small>
+              FAVORITOS
+            </small>
+
+            <h2>
+              Músicas que você curtiu
+            </h2>
+
+          </div>
+
+          <button id="playFavorites">
+            ▶ Tocar
+          </button>
+
+        </div>
+
+
+        <div
+          id="favoritesList"
+          class="tracklist"
+        >
+
+          <div class="empty">
+            Você ainda não adicionou favoritos.
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- PLAYLISTS -->
+
+      <div
+        id="playlistsView"
+        class="library-view hidden"
+      >
+
+        <div class="section-head">
+
+          <div>
+
+            <small>
+              PLAYLISTS
+            </small>
+
+            <h2>
+              Suas playlists
+            </h2>
+
+          </div>
+
+          <button id="createPlaylistButton">
+            + Nova
+          </button>
+
+        </div>
+
+
+        <div
+          id="playlistsGrid"
+          class="albums-grid"
+        >
+
+          <div class="empty">
+            Nenhuma playlist criada.
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         TELA DE PLAYLIST
+    ====================================================== -->
+
+    <section
+      id="playlistView"
+      class="album-view hidden"
+    >
+
+      <button
+        id="backPlaylist"
+        class="album-back"
+      >
+        ← Minhas playlists
+      </button>
+
+
+      <div class="album-header">
+
+        <div class="playlist-big-icon">
+          ♪
+        </div>
+
+
+        <div class="album-hero-info">
+
+          <small>
+            PLAYLIST
+          </small>
+
+          <h2 id="playlistViewTitle">
+            Minha Playlist
+          </h2>
+
+          <p id="playlistViewMeta">
+            0 músicas
+          </p>
+
+
+          <div class="album-actions">
+
+            <button
+              id="playlistPlay"
+              class="album-main-button"
+            >
+              ▶ Tocar playlist
+            </button>
+
+            <button
+              id="playlistShuffle"
+              class="album-secondary-button"
+            >
+              ⇄ Aleatório
+            </button>
+
+            <button
+              id="deletePlaylist"
+              class="album-secondary-button"
+            >
+              🗑 Excluir playlist
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="album-track-area">
+
+        <div
+          id="playlistTracks"
+          class="tracklist"
+        ></div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         ARTISTAS
+    ====================================================== -->
+
+    <section
+      id="artistsSection"
+      class="section"
+    >
+
+      <div class="section-head">
+
+        <div>
+
+          <small>
+            ARTISTAS
+          </small>
+
+          <h2>
+            Artistas
+          </h2>
+
+        </div>
+
+      </div>
+
+
+      <div
+        id="artistsGrid"
+        class="albums-grid"
+      ></div>
+
+    </section>
+
+
+    <!-- =====================================================
+         ÁLBUNS
+    ====================================================== -->
+
+    <section
+      id="albumsSection"
+      class="section"
+    >
+
+      <div class="section-head">
+
+        <div>
+
+          <small>
+            ÁLBUNS
+          </small>
+
+          <h2>
+            Álbuns
+          </h2>
+
+        </div>
+
+      </div>
+
+
+      <div
+        id="albumsGrid"
+        class="albums-grid"
+      ></div>
+
+    </section>
+
+
+    <!-- =====================================================
+         TELA DO ÁLBUM
+    ====================================================== -->
+
+    <section
+      id="albumView"
+      class="album-view hidden"
+    >
+
+      <button
+        id="backAlbum"
+        class="album-back"
+      >
+        ← Voltar
+      </button>
+
+
+      <div class="album-header">
+
+        <div class="album-hero-cover">
+
+          <img
+            id="albumViewCover"
+            src="logo-play.png"
+            alt="Capa do álbum"
+          >
+
+        </div>
+
+
+        <div class="album-hero-info">
+
+          <small>
+            ÁLBUM
+          </small>
+
+          <h2 id="albumViewTitle">
+            Álbum
+          </h2>
+
+          <h3 id="albumViewArtist">
+            Artista
+          </h3>
+
+          <p id="albumViewMeta">
+            Categoria • 0 faixas
+          </p>
+
+
+          <div class="album-actions">
+
+            <button
+              id="albumPlay"
+              class="album-main-button"
+            >
+              ▶ Tocar álbum
+            </button>
+
+            <button
+              id="albumShuffle"
+              class="album-secondary-button"
+            >
+              ⇄ Aleatório
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="album-track-area">
+
+        <div class="section-head">
+
+          <div>
+
+            <small>
+              FAIXAS
+            </small>
+
+            <h2>
+              Músicas do álbum
+            </h2>
+
+          </div>
+
+        </div>
+
+
+        <div
+          id="albumTracks"
+          class="tracklist"
+        ></div>
+
+      </div>
+
+    </section>
+
+    <!-- =====================================================
+         TELA DA MÚSICA
+    ====================================================== -->
+
+    <section
+      id="trackView"
+      class="track-view hidden"
+    >
+
+      <button
+        id="backTrack"
+        class="album-back"
+      >
+        ← Voltar
+      </button>
+
+      <div class="track-view-card">
+
+        <div class="track-view-cover">
+          <img
+            id="trackViewCover"
+            src="logo-play.png"
+            alt="Capa da música"
+          >
+        </div>
+
+        <div class="track-view-info">
+          <small>TOCANDO AGORA</small>
+          <h2 id="trackViewTitle">Música</h2>
+          <h3 id="trackViewArtist">Artista</h3>
+          <p id="trackViewAlbum">Álbum</p>
+
+          <div class="track-view-actions">
+            <button id="trackViewPlay" class="album-main-button">▶ Tocar música</button>
+            <button id="trackViewFavorite" class="album-secondary-button">♡ Favoritar</button>
+            <button id="trackViewPlaylist" class="album-secondary-button">＋ Playlist</button>
+            <a id="trackViewDownload" class="album-secondary-button track-view-download" href="#" download>⇩ Baixar</a>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+
+    <!-- =====================================================
+         DESTAQUES
+    ====================================================== -->
+
+    <section
+      id="featuredSection"
+      class="section"
+    >
+
+      <div class="section-head">
+
+        <div>
+
+          <small>
+            DESTAQUES
+          </small>
+
+          <h2>
+            Louvores em destaque
+          </h2>
+
+        </div>
+
+        <button id="playAll">
+          Tocar tudo
+        </button>
+
+      </div>
+
+
+      <div
+        id="catalog"
+        class="tracklist"
+      ></div>
+
+    </section>
+
+  </main>
+
+
+  <!-- =====================================================
+       MODAL ADICIONAR À PLAYLIST
+  ====================================================== -->
+
+  <div
+    id="playlistModal"
+    class="playlist-modal hidden"
+  >
+
+    <div class="playlist-modal-box">
+
+      <div class="playlist-modal-head">
+
+        <div>
+
+          <small>
+            VEM COMIGO PLAY
+          </small>
+
+          <h2>
+            Adicionar à playlist
+          </h2>
+
+        </div>
+
+
+        <button
+          id="closePlaylistModal"
+          class="modal-close"
+        >
+          ✕
+        </button>
+
+      </div>
+
+
+      <div
+        id="playlistModalTrack"
+        class="playlist-modal-track"
+      >
+        Escolha uma música.
+      </div>
+
+
+      <div
+        id="playlistChoices"
+        class="playlist-choices"
+      ></div>
+
+
+      <button
+        id="newPlaylistFromModal"
+        class="primary-action"
+      >
+        + Criar nova playlist
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       PLAYER FIXO
+  ====================================================== -->
+
+  <footer
+    class="player"
+    id="player"
+  >
+
+    <!-- CAPA -->
+
+    <img
+      id="cover"
+      src="logo-play.png"
+      alt="Capa"
+    >
+
+
+    <!-- INFORMAÇÕES -->
+
+    <div class="player-meta">
+
+      <small id="kind">
+        VEM COMIGO PLAY
+      </small>
+
+      <strong id="title">
+        Escolha uma faixa
+      </strong>
+
+      <span id="artist">
+        Player próprio do site
+      </span>
+
+
+      <div class="progress">
+
+        <span id="cur">
+          0:00
+        </span>
+
+        <input
+          id="seek"
+          type="range"
+          min="0"
+          max="100"
+          value="0"
+          aria-label="Progresso"
+        >
+
+        <span id="dur">
+          0:00
+        </span>
+
+      </div>
+
+    </div>
+
+
+    <!-- ANTERIOR -->
+
+    <button
+      id="prev"
+      class="round"
+      aria-label="Anterior"
+      title="Anterior"
+    >
+      ⏮
+    </button>
+
+
+    <!-- PLAY -->
+
+    <button
+      id="play"
+      class="round main"
+      aria-label="Tocar"
+      title="Tocar"
+    >
+      ▶
+    </button>
+
+
+    <!-- PRÓXIMA -->
+
+    <button
+      id="next"
+      class="round"
+      aria-label="Próxima"
+      title="Próxima"
+    >
+      ⏭
+    </button>
+
+
+    <!-- =================================================
+         CONTROLES EXTRAS
+    ================================================== -->
+
+    <div class="player-extra-actions">
+
+      <!-- REPETIR -->
+
+      <button
+        id="repeatButton"
+        class="player-extra-button"
+        title="Repetir"
+        aria-label="Repetir"
+      >
+        🔁
+      </button>
+
+
+      <!-- FAVORITO -->
+
+      <button
+        id="favoriteCurrent"
+        class="player-extra-button"
+        title="Adicionar aos favoritos"
+        aria-label="Favorito"
+      >
+        ♡
+      </button>
+
+
+      <!-- PLAYLIST -->
+
+      <button
+        id="playlistCurrent"
+        class="player-extra-button"
+        title="Adicionar à playlist"
+        aria-label="Adicionar à playlist"
+      >
+        ＋
+      </button>
+
+
+      <!-- DOWNLOAD -->
+
+      <a
+        id="downloadCurrent"
+        class="player-extra-button"
+        href="#"
+        download
+        title="Baixar música"
+        aria-label="Baixar música"
+      >
+        ⇩
+      </a>
+
+    </div>
+
+
+    <!-- VOLUME -->
+
+    <div class="volume">
+
+      <span>
+        🔊
+      </span>
+
+      <input
+        id="volume"
+        type="range"
+        min="0"
+        max="1"
+        step=".05"
+        value=".85"
+        aria-label="Volume"
+      >
+
+    </div>
+
+
+    <!-- ÁUDIO -->
+
+    <audio
+      id="audio"
+      preload="metadata"
+    ></audio>
+
+  </footer>
+
+
+  <script src="app.js"></script>
+
+</body>
+
+</html>
