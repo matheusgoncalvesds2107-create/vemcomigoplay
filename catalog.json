@@ -1,0 +1,124 @@
+{
+  "tracks": [
+    {
+      "id": "leticia-deus-de-milagres",
+      "title": "Deus de Milagres",
+      "artist": "Letícia Lima",
+      "album": "Deus de Milagres",
+      "category": "Adoração",
+      "type": "music",
+      "duration": "",
+      "audioUrl": "",
+      "downloadUrl": "",
+      "cover": "logo-play.png"
+    },
+    {
+      "id": "breno-es-me-aqui",
+      "title": "Es-me Aqui",
+      "artist": "Breno Silva",
+      "album": "Es-me Aqui",
+      "category": "Adoração",
+      "type": "music",
+      "duration": "",
+      "audioUrl": "",
+      "downloadUrl": "",
+      "cover": "logo-play.svg"
+    },
+    {
+      "id": "leo-lima-fernandes-deus-me-ama",
+      "title": "Deus Me Ama",
+      "artist": "Léo Lima & Fernandes",
+      "album": "Deus Me Ama",
+      "category": "Arrocha Gospel",
+      "type": "music",
+      "duration": "",
+      "audioUrl": "",
+      "downloadUrl": "",
+      "cover": "logo-play.svg"
+    },
+    {
+      "id": "lucas-ana-paula-estrada-de-fe",
+      "title": "Estrada de Fé",
+      "artist": "Lucas & Ana Paula",
+      "album": "Estrada de Fé",
+      "category": "Sertanejo Gospel",
+      "type": "music",
+      "duration": "",
+      "audioUrl": "",
+      "downloadUrl": "",
+      "cover": "logo-play.svg"
+    },
+    {
+      "id": "lucas-henrique-classicos",
+      "title": "Clássicos da Fé",
+      "artist": "Lucas Henrique",
+      "album": "Clássicos da Fé",
+      "category": "Sertanejo Gospel",
+      "type": "music",
+      "duration": "",
+      "audioUrl": "",
+      "downloadUrl": "",
+      "cover": "logo-play.svg"
+    },
+    {
+      "id": "mathias-fernandes-classicos",
+      "title": "Clássicos da Fé",
+      "artist": "Mathias Fernandes",
+      "album": "Clássicos da Fé",
+      "category": "Arrocha Gospel",
+      "type": "music",
+      "duration": "",
+      "audioUrl": "",
+      "downloadUrl": "",
+      "cover": "logo-play.svg"
+    },
+    {
+      "id": "noah-james-you-never-let-me-go",
+      "title": "You Never Let Me Go",
+      "artist": "Noah James",
+      "album": "Single",
+      "category": "Pop Worship",
+      "type": "music",
+      "duration": "",
+      "audioUrl": "",
+      "downloadUrl": "",
+      "cover": "logo-play.svg"
+    },
+    {
+      "id": "luke-carter-closer-to-your-heart",
+      "title": "Closer to Your Heart",
+      "artist": "Luke Carter",
+      "album": "Single",
+      "category": "Pop Worship",
+      "type": "music",
+      "duration": "",
+      "audioUrl": "",
+      "downloadUrl": "",
+      "cover": "logo-play.svg"
+    },
+    {
+      "id": "ethan-grace-grace-found-me",
+      "title": "Grace Found Me",
+      "artist": "Ethan Grace",
+      "album": "Single",
+      "category": "Pop Worship",
+      "type": "music",
+      "duration": "",
+      "audioUrl": "",
+      "downloadUrl": "",
+      "cover": "logo-play.svg"
+    },
+    {
+      "id": "podcast-palavra-que-edifica",
+      "title": "Palavra que Edifica",
+      "artist": "Vem Comigo Records",
+      "album": "Podcast",
+      "category": "Podcasts",
+      "type": "podcast",
+      "duration": "",
+      "audioUrl": "",
+      "downloadUrl": "",
+      "cover": "logo-play.svg"
+    }
+  ]
+}
