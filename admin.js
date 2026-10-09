@@ -4,25 +4,40 @@ const SUPABASE_URL =
 const SUPABASE_ANON_KEY =
   "sb_publishable_p95BIFIlAQ02aZYVdDKaNQ_mjtXSBYK";
 
-const BUCKET = "musicas";
+const BUCKET =
+  "musicas";
 
-let accessToken = "";
-let refreshToken = "";
+const $ =
+  selector =>
+    document.querySelector(
+      selector
+    );
 
-let publishedTracks = [];
+let accessToken =
+  "";
 
-const $ = (selector) =>
-  document.querySelector(selector);
+let refreshToken =
+  "";
+
+let publishedTracks =
+  [];
 
 
 /* =========================================================
-   SINCRONIZADOR
+   SINCRONIZAÇÃO
 ========================================================= */
 
-let syncTrack = null;
-let syncLyricsLines = [];
-let syncData = [];
-let syncLineIndex = 0;
+let syncTrack =
+  null;
+
+let syncLyricsLines =
+  [];
+
+let syncData =
+  [];
+
+let syncLineIndex =
+  0;
 
 const syncAudio =
   $("#syncAudio");
@@ -40,18 +55,15 @@ function setStatus(
   const box =
     $("#status");
 
-  if (!box) return;
+  if (!box) {
+    return;
+  }
 
   box.textContent =
     message;
 
   box.className =
-    "status" +
-    (
-      type
-        ? ` ${type}`
-        : ""
-    );
+    `status ${type}`;
 }
 
 
@@ -63,18 +75,15 @@ function setLyricsStatus(
   const box =
     $("#lyricsStatus");
 
-  if (!box) return;
+  if (!box) {
+    return;
+  }
 
   box.textContent =
     message;
 
   box.className =
-    "status" +
-    (
-      type
-        ? ` ${type}`
-        : ""
-    );
+    `status ${type}`;
 }
 
 
@@ -86,71 +95,15 @@ function setSyncStatus(
   const box =
     $("#syncStatus");
 
-  if (!box) return;
+  if (!box) {
+    return;
+  }
 
   box.textContent =
     message;
 
   box.className =
-    "status" +
-    (
-      type
-        ? ` ${type}`
-        : ""
-    );
-}
-
-
-/* =========================================================
-   PROGRESSO UPLOAD
-========================================================= */
-
-function showProgress(
-  percent,
-  message = "Enviando..."
-) {
-
-  const area =
-    $("#progressArea");
-
-  if (!area) return;
-
-  area.classList.remove(
-    "hidden"
-  );
-
-  $("#progressPercent")
-    .textContent =
-    `${percent}%`;
-
-  $("#progressText")
-    .textContent =
-    message;
-
-  $("#progressFill")
-    .style.width =
-    `${percent}%`;
-}
-
-
-function hideProgress() {
-
-  setTimeout(() => {
-
-    const area =
-      $("#progressArea");
-
-    if (!area) return;
-
-    area.classList.add(
-      "hidden"
-    );
-
-    $("#progressFill")
-      .style.width =
-      "0%";
-
-  }, 1200);
+    `status ${type}`;
 }
 
 
@@ -158,19 +111,63 @@ function hideProgress() {
    UTILIDADES
 ========================================================= */
 
-function slug(text) {
+function escapeHtml(
+  text = ""
+) {
 
-  return String(text || "")
-    .normalize("NFD")
+  return String(text)
+
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
+}
+
+
+function slug(
+  text
+) {
+
+  return String(
+    text || ""
+  )
+
+    .normalize(
+      "NFD"
+    )
+
     .replace(
       /[\u0300-\u036f]/g,
       ""
     )
+
     .toLowerCase()
+
     .replace(
       /[^a-z0-9]+/g,
       "-"
     )
+
     .replace(
       /^-+|-+$/g,
       ""
@@ -178,7 +175,9 @@ function slug(text) {
 }
 
 
-function randomItem(array) {
+function randomItem(
+  array
+) {
 
   return array[
     Math.floor(
@@ -189,42 +188,38 @@ function randomItem(array) {
 }
 
 
-function escapeHtml(
-  text = ""
-) {
-
-  return String(text)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-
 function formatSyncTime(
   seconds
 ) {
 
   if (
-    !Number.isFinite(seconds)
+    !Number.isFinite(
+      seconds
+    )
   ) {
+
     return "0:00.0";
   }
+
 
   const minutes =
     Math.floor(
       seconds / 60
     );
 
+
   const secs =
     seconds % 60;
+
 
   return (
     `${minutes}:` +
     secs
       .toFixed(1)
-      .padStart(4, "0")
+      .padStart(
+        4,
+        "0"
+      )
   );
 }
 
@@ -235,21 +230,11 @@ function formatSyncTime(
 
 async function login() {
 
-  sessionStorage.removeItem(
-    "vcplay-token"
-  );
-
-  sessionStorage.removeItem(
-    "vcplay-refresh-token"
-  );
-
-  accessToken = "";
-  refreshToken = "";
-
   const email =
     prompt(
       "E-mail do administrador:"
     );
+
 
   if (!email) {
 
@@ -261,10 +246,12 @@ async function login() {
     return false;
   }
 
+
   const password =
     prompt(
       "Senha do administrador:"
     );
+
 
   if (!password) {
 
@@ -276,15 +263,19 @@ async function login() {
     return false;
   }
 
+
   try {
 
     setStatus(
-      "Entrando no painel..."
+      "Entrando..."
     );
+
 
     const response =
       await fetch(
+
         `${SUPABASE_URL}/auth/v1/token?grant_type=password`,
+
         {
 
           method:
@@ -307,60 +298,51 @@ async function login() {
         }
       );
 
+
     const data =
       await response.json();
+
 
     if (!response.ok) {
 
       throw new Error(
-        data.error_description ||
         data.message ||
-        data.msg ||
-        data.error ||
-        `Erro ${response.status}`
+        data.error_description ||
+        "Erro no login."
       );
     }
+
 
     accessToken =
       data.access_token;
 
+
     refreshToken =
-      data.refresh_token || "";
+      data.refresh_token ||
+      "";
 
-    sessionStorage.setItem(
-      "vcplay-token",
-      accessToken
-    );
-
-    if (refreshToken) {
-
-      sessionStorage.setItem(
-        "vcplay-refresh-token",
-        refreshToken
-      );
-    }
 
     setStatus(
       "Painel conectado.",
       "ok"
     );
 
+
     return true;
+
 
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      error
+    );
+
 
     setStatus(
-      error.message ||
-      "Não foi possível entrar.",
+      error.message,
       "error"
     );
 
-    alert(
-      error.message ||
-      "Não foi possível entrar."
-    );
 
     return false;
   }
@@ -368,7 +350,7 @@ async function login() {
 
 
 /* =========================================================
-   RENOVAR LOGIN
+   REFRESH TOKEN
 ========================================================= */
 
 async function refreshSession() {
@@ -377,11 +359,14 @@ async function refreshSession() {
     return false;
   }
 
+
   try {
 
     const response =
       await fetch(
+
         `${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`,
+
         {
 
           method:
@@ -398,37 +383,35 @@ async function refreshSession() {
 
           body:
             JSON.stringify({
+
               refresh_token:
                 refreshToken
+
             })
         }
       );
 
+
     const data =
       await response.json();
+
 
     if (!response.ok) {
       return false;
     }
 
+
     accessToken =
       data.access_token;
+
 
     refreshToken =
       data.refresh_token ||
       refreshToken;
 
-    sessionStorage.setItem(
-      "vcplay-token",
-      accessToken
-    );
-
-    sessionStorage.setItem(
-      "vcplay-refresh-token",
-      refreshToken
-    );
 
     return true;
+
 
   } catch {
 
@@ -450,10 +433,10 @@ async function authenticatedFetch(
 
     ...(options.headers || {}),
 
-    "apikey":
+    apikey:
       SUPABASE_ANON_KEY,
 
-    "Authorization":
+    Authorization:
       `Bearer ${accessToken}`
   };
 
@@ -466,18 +449,19 @@ async function authenticatedFetch(
 
 
   if (
-    response.status === 401
+    response.status ===
+    401
   ) {
 
     const renewed =
       await refreshSession();
 
+
     if (renewed) {
 
-      options.headers[
-        "Authorization"
-      ] =
+      options.headers.Authorization =
         `Bearer ${accessToken}`;
+
 
       response =
         await fetch(
@@ -486,6 +470,7 @@ async function authenticatedFetch(
         );
     }
   }
+
 
   return response;
 }
@@ -499,17 +484,18 @@ function createVerse(
   theme
 ) {
 
-  const openings = [
+  const a = [
 
     "Quando a noite chega e eu penso em parar",
     "Quando o medo tenta a minha fé calar",
     "Mesmo quando eu não consigo entender",
     "Quando o caminho parece se fechar",
     "Se o meu coração começa a duvidar",
-    "Quando as respostas demoram pra chegar"
+    "Quando a resposta demora pra chegar"
   ];
 
-  const middle = [
+
+  const b = [
 
     "Eu lembro que Tua mão ainda está aqui",
     "Eu sei que a Tua voz não desistiu de mim",
@@ -519,7 +505,8 @@ function createVerse(
     "Eu sei que Tu conheces o meu amanhã"
   ];
 
-  const endings = [
+
+  const c = [
 
     "E encontro forças para prosseguir",
     "E mesmo sem enxergar eu vou seguir",
@@ -529,13 +516,14 @@ function createVerse(
     "E o impossível pode se transformar"
   ];
 
+
   return (
-`${randomItem(openings)}
-${randomItem(middle)}
+`${randomItem(a)}
+${randomItem(b)}
 ${theme
-  ? `Eu coloco diante de Ti ${theme}`
-  : "Eu coloco os meus sonhos diante de Ti"}
-${randomItem(endings)}`
+  ? `Eu entrego a Ti ${theme}`
+  : "Eu entrego os meus sonhos diante de Ti"}
+${randomItem(c)}`
   );
 }
 
@@ -545,26 +533,16 @@ function createChorus(
   theme
 ) {
 
-  const lines = [
-
-    "Eu vou confiar em Ti",
-    "Eu não vou desistir",
-    "Minha esperança está em Ti",
-    "Eu sei que vais cuidar de mim",
-    "Mesmo sem ver eu vou crer",
-    "Contigo eu vou permanecer"
-  ];
-
   return (
-`${title},
-essa é a canção do meu coração
-${randomItem(lines)}
-Segura firme a minha mão
+`${title}
+Eu escolho confiar em Ti
+Mesmo sem conseguir enxergar
+Eu sei que estás cuidando de mim
 
 ${theme
-  ? `Em ${theme}, eu escolho acreditar`
-  : "Na Tua promessa eu escolho acreditar"}
-${randomItem(lines)}
+  ? `Em ${theme} eu vou permanecer`
+  : "Na Tua promessa eu vou permanecer"}
+Segura firme a minha mão
 Com Jesus eu vou continuar`
   );
 }
@@ -574,40 +552,19 @@ function createBridge(
   theme
 ) {
 
-  const parts = [
-
-`Se a porta ainda não abriu
-Eu vou esperar
-Se a resposta ainda não chegou
-Eu vou confiar`,
-
+  return (
 `Pode o vento soprar
 Pode a noite chegar
 A Tua presença comigo
-Vai me fazer continuar`,
+Vai me fazer continuar
 
-`Eu não vivo pelo que vejo
-Eu caminho pela fé
-Meu futuro está seguro
-Nas mãos de quem Deus é`,
-
-`O impossível não é maior
-Que o poder do meu Senhor
-Eu descanso na promessa
-Eu descanso no Teu amor`
-  ];
-
-  let bridge =
-    randomItem(parts);
-
-  if (theme) {
-
-    bridge +=
-`\n\nMeu coração entrega a Ti
-${theme}`;
-  }
-
-  return bridge;
+Eu não caminho pelo que vejo
+Eu escolho caminhar pela fé
+${theme
+  ? `Eu entrego a Ti ${theme}`
+  : "Meu futuro está em Tuas mãos"}
+E descanso em quem Tu és`
+  );
 }
 
 
@@ -618,22 +575,9 @@ function createLyrics({
   theme
 }) {
 
-  const verse1 =
-    createVerse(theme);
+  let intro =
+    "";
 
-  const verse2 =
-    createVerse(theme);
-
-  const chorus =
-    createChorus(
-      title,
-      theme
-    );
-
-  const bridge =
-    createBridge(theme);
-
-  let intro = "";
 
   if (
     artist
@@ -650,9 +594,23 @@ Oh, oh… Mathias Fernandes!
 `;
   }
 
+
+  if (
+    category ===
+    "Gospel Vaqueiro"
+  ) {
+
+    intro +=
+`[Introdução Instrumental]
+Sanfona, violão e fé na estrada.
+
+`;
+  }
+
+
   return (
 `${intro}[Verso 1]
-${verse1}
+${createVerse(theme)}
 
 [Pré-Refrão]
 Mesmo quando eu não vejo
@@ -661,10 +619,13 @@ A Tua graça me sustenta
 E me ensina a prosseguir
 
 [Refrão]
-${chorus}
+${createChorus(
+  title,
+  theme
+)}
 
 [Verso 2]
-${verse2}
+${createVerse(theme)}
 
 [Pré-Refrão]
 Se a tempestade levantar
@@ -673,13 +634,21 @@ A Tua mão está comigo
 E eu escolho permanecer
 
 [Refrão]
-${chorus}
+${createChorus(
+  title,
+  theme
+)}
 
 [Ponte]
-${bridge}
+${createBridge(
+  theme
+)}
 
 [Refrão Final]
-${chorus}
+${createChorus(
+  title,
+  theme
+)}
 
 [Final]
 Eu descanso em Ti
@@ -691,97 +660,155 @@ Nas Tuas mãos`
 
 
 /* =========================================================
-   GERAR LETRA
+   BOTÃO GERAR LETRA
 ========================================================= */
 
-window.generateAutomaticLyrics =
-  function () {
+function generateAutomaticLyrics() {
 
-    const artist =
-      $("#artist")
-        ?.value
-        ?.trim() || "";
-
-    const album =
-      $("#album")
-        ?.value
-        ?.trim() || "";
-
-    const title =
-      $("#title")
-        ?.value
-        ?.trim() || "";
-
-    const category =
-      $("#category")
-        ?.value || "";
-
-    const theme =
-      $("#lyricsTheme")
-        ?.value
-        ?.trim() || "";
+  const artist =
+    $("#artist")
+      ?.value
+      ?.trim() ||
+    "";
 
 
-    if (!artist) {
-
-      setLyricsStatus(
-        "Digite o artista primeiro.",
-        "error"
-      );
-
-      return;
-    }
+  const title =
+    $("#title")
+      ?.value
+      ?.trim() ||
+    "";
 
 
-    if (!title) {
-
-      setLyricsStatus(
-        "Digite o nome da música primeiro.",
-        "error"
-      );
-
-      return;
-    }
+  const category =
+    $("#category")
+      ?.value ||
+    "";
 
 
-    if (!category) {
-
-      setLyricsStatus(
-        "Escolha a categoria.",
-        "error"
-      );
-
-      return;
-    }
+  const theme =
+    $("#lyricsTheme")
+      ?.value
+      ?.trim() ||
+    "";
 
 
-    const lyrics =
-      createLyrics({
-        title,
-        artist,
-        album,
-        category,
-        theme
-      });
-
-
-    $("#lyrics").value =
-      lyrics;
-
-    $("#lyrics")
-      .dataset.generated =
-      "true";
-
+  if (!artist) {
 
     setLyricsStatus(
-      "Letra original criada. Revise antes de publicar.",
-      "ok"
+      "Digite o artista primeiro.",
+      "error"
     );
-  };
+
+    return;
+  }
+
+
+  if (!title) {
+
+    setLyricsStatus(
+      "Digite o nome da música.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  if (!category) {
+
+    setLyricsStatus(
+      "Escolha a categoria.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  setLyricsStatus(
+    "Gerando letra..."
+  );
+
+
+  const result =
+    createLyrics({
+
+      title,
+      artist,
+      category,
+      theme
+
+    });
+
+
+  const box =
+    $("#lyrics");
+
+
+  box.value =
+    result;
+
+
+  box.dataset.generated =
+    "true";
+
+
+  setLyricsStatus(
+    "✅ Letra gerada. Revise antes de publicar.",
+    "ok"
+  );
+}
 
 
 /* =========================================================
-   UPLOAD STORAGE
+   LIGAR BOTÃO GERAR
+========================================================= */
+
+const generateButton =
+  $("#generateLyricsButton");
+
+
+if (generateButton) {
+
+  generateButton.onclick =
+    generateAutomaticLyrics;
+}
+
+
+/* =========================================================
+   LIMPAR LETRA
+========================================================= */
+
+const clearButton =
+  $("#clearLyricsButton");
+
+
+if (clearButton) {
+
+  clearButton.onclick =
+    () => {
+
+      const box =
+        $("#lyrics");
+
+
+      box.value =
+        "";
+
+
+      box.dataset.generated =
+        "false";
+
+
+      setLyricsStatus(
+        "Letra limpa."
+      );
+    };
+}
+
+
+/* =========================================================
+   UPLOAD
 ========================================================= */
 
 async function uploadFile(
@@ -791,7 +818,9 @@ async function uploadFile(
 
   const response =
     await authenticatedFetch(
+
       `${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`,
+
       {
 
         method:
@@ -825,16 +854,18 @@ async function uploadFile(
 
     throw new Error(
       data.message ||
-      data.error ||
-      "Erro ao enviar arquivo."
+      "Erro no upload."
     );
   }
+
 
   return data;
 }
 
 
-function publicUrl(path) {
+function publicUrl(
+  path
+) {
 
   return (
     `${SUPABASE_URL}` +
@@ -845,7 +876,7 @@ function publicUrl(path) {
 
 
 /* =========================================================
-   SALVAR FAIXA
+   SALVAR TRACK
 ========================================================= */
 
 async function saveTrack(
@@ -854,7 +885,9 @@ async function saveTrack(
 
   const response =
     await authenticatedFetch(
+
       `${SUPABASE_URL}/rest/v1/tracks`,
+
       {
 
         method:
@@ -865,7 +898,7 @@ async function saveTrack(
           "Content-Type":
             "application/json",
 
-          "Prefer":
+          Prefer:
             "return=representation"
         },
 
@@ -890,70 +923,61 @@ async function saveTrack(
     throw new Error(
       data.message ||
       data.hint ||
-      data.details ||
-      "Erro ao publicar música."
+      "Erro ao salvar música."
     );
   }
+
 
   return data[0];
 }
 
 
 /* =========================================================
-   CARREGAR BIBLIOTECA
+   CARREGAR TRACKS
 ========================================================= */
 
 async function loadTracks() {
 
-  try {
+  const response =
+    await authenticatedFetch(
 
-    const response =
-      await authenticatedFetch(
-        `${SUPABASE_URL}/rest/v1/tracks?select=*&order=created_at.desc`
-      );
+      `${SUPABASE_URL}/rest/v1/tracks?select=*&order=created_at.desc`
 
-
-    if (!response.ok) {
-
-      throw new Error(
-        "Erro ao carregar biblioteca."
-      );
-    }
+    );
 
 
-    publishedTracks =
-      await response.json();
+  const data =
+    await response.json();
 
 
-    updateArtistSuggestions();
+  if (!response.ok) {
 
-    renderTracks();
-
-    populateSyncTrackSelect();
-
-
-  } catch (error) {
-
-    console.error(error);
-
-    setStatus(
-      error.message,
-      "error"
+    throw new Error(
+      "Erro ao carregar músicas."
     );
   }
+
+
+  publishedTracks =
+    data;
+
+
+  renderArtistSuggestions();
+
+  renderTracks();
+
+  renderSyncSelect();
 }
 
 
 /* =========================================================
-   SUGESTÕES ARTISTAS
+   ARTISTAS
 ========================================================= */
 
-function updateArtistSuggestions() {
+function renderArtistSuggestions() {
 
   const list =
     $("#artistSuggestions");
-
-  if (!list) return;
 
 
   const defaults = [
@@ -971,33 +995,27 @@ function updateArtistSuggestions() {
   ];
 
 
-  const artists =
+  const fromTracks =
     publishedTracks
       .map(
-        track =>
-          track.artist
+        t =>
+          t.artist
       )
       .filter(Boolean);
 
 
-  const all =
+  const artists =
     [
       ...new Set([
         ...defaults,
-        ...artists
+        ...fromTracks
       ])
-    ]
-      .sort(
-        (a, b) =>
-          a.localeCompare(
-            b,
-            "pt-BR"
-          )
-      );
+    ];
 
 
   list.innerHTML =
-    all
+    artists
+      .sort()
       .map(
         artist =>
           `<option value="${escapeHtml(artist)}"></option>`
@@ -1007,901 +1025,7 @@ function updateArtistSuggestions() {
 
 
 /* =========================================================
-   LISTA DO SINCRONIZADOR
-========================================================= */
-
-function populateSyncTrackSelect() {
-
-  const select =
-    $("#syncTrackSelect");
-
-  if (!select) return;
-
-
-  const withLyrics =
-    publishedTracks
-      .filter(
-        track =>
-          track.lyrics &&
-          track.lyrics.trim() &&
-          track.audio_url
-      );
-
-
-  select.innerHTML =
-    `
-      <option value="">
-        Selecione uma música publicada
-      </option>
-    ` +
-    withLyrics
-      .map(
-        track =>
-`
-<option value="${track.id}">
-${escapeHtml(track.artist)} — ${escapeHtml(track.title)}
-</option>
-`
-      )
-      .join("");
-}
-
-
-/* =========================================================
-   PREPARAR LINHAS
-========================================================= */
-
-function extractSyncLines(
-  lyrics
-) {
-
-  return String(
-    lyrics || ""
-  )
-    .split("\n")
-    .map(
-      line =>
-        line.trim()
-    )
-    .filter(
-      line =>
-        line &&
-        !(
-          line.startsWith("[") &&
-          line.endsWith("]")
-        )
-    );
-}
-
-
-/* =========================================================
-   ESCOLHER MÚSICA PARA SINCRONIZAR
-========================================================= */
-
-if ($("#syncTrackSelect")) {
-
-  $("#syncTrackSelect")
-    .addEventListener(
-      "change",
-      () => {
-
-        const id =
-          $("#syncTrackSelect")
-            .value;
-
-
-        if (!id) {
-
-          resetSyncArea();
-
-          return;
-        }
-
-
-        const track =
-          publishedTracks.find(
-            item =>
-              String(item.id) ===
-              String(id)
-          );
-
-
-        if (!track) {
-
-          resetSyncArea();
-
-          return;
-        }
-
-
-        syncTrack =
-          track;
-
-
-        syncLyricsLines =
-          extractSyncLines(
-            track.lyrics
-          );
-
-
-        syncData =
-          [];
-
-
-        syncLineIndex =
-          0;
-
-
-        $("#syncTrackInfo")
-          .style.display =
-          "block";
-
-
-        $("#syncTrackTitle")
-          .textContent =
-          track.title;
-
-
-        $("#syncTrackArtist")
-          .textContent =
-          `${track.artist} • ${track.album}`;
-
-
-        syncAudio.src =
-          track.audio_url;
-
-
-        syncAudio.currentTime =
-          0;
-
-
-        /*
-          Se já existe letra sincronizada,
-          carrega automaticamente.
-        */
-
-        if (
-          Array.isArray(
-            track.lyrics_synced
-          ) &&
-          track.lyrics_synced.length
-        ) {
-
-          syncData =
-            track.lyrics_synced
-              .map(
-                item => ({
-                  time:
-                    Number(
-                      item.time
-                    ),
-                  text:
-                    item.text
-                })
-              );
-
-
-          syncLineIndex =
-            Math.min(
-              syncData.length,
-              syncLyricsLines.length
-            );
-
-
-          setSyncStatus(
-            "Essa música já possui sincronização. Você pode continuar ou recomeçar.",
-            "ok"
-          );
-
-        }
-
-        else {
-
-          setSyncStatus(
-            "Dê play e marque cada linha quando ela começar."
-          );
-        }
-
-
-        $("#markSyncButton")
-          .disabled =
-          false;
-
-
-        $("#restartSyncButton")
-          .disabled =
-          false;
-
-
-        updateSyncScreen();
-      }
-    );
-}
-
-
-/* =========================================================
-   RESET SINCRONIZADOR
-========================================================= */
-
-function resetSyncArea() {
-
-  syncTrack =
-    null;
-
-  syncLyricsLines =
-    [];
-
-  syncData =
-    [];
-
-  syncLineIndex =
-    0;
-
-
-  if (syncAudio) {
-
-    syncAudio.pause();
-
-    syncAudio.removeAttribute(
-      "src"
-    );
-  }
-
-
-  if ($("#syncTrackInfo")) {
-
-    $("#syncTrackInfo")
-      .style.display =
-      "none";
-  }
-
-
-  if ($("#currentSyncLine")) {
-
-    $("#currentSyncLine")
-      .textContent =
-      "Escolha uma música.";
-  }
-
-
-  if ($("#syncLines")) {
-
-    $("#syncLines")
-      .innerHTML =
-`
-<div class="empty">
-Escolha uma música com letra.
-</div>
-`;
-  }
-
-
-  if ($("#syncProgressText")) {
-
-    $("#syncProgressText")
-      .textContent =
-      "0 / 0";
-  }
-
-
-  if ($("#syncProgressFill")) {
-
-    $("#syncProgressFill")
-      .style.width =
-      "0%";
-  }
-
-
-  if ($("#markSyncButton")) {
-
-    $("#markSyncButton")
-      .disabled =
-      true;
-  }
-
-
-  if ($("#undoSyncButton")) {
-
-    $("#undoSyncButton")
-      .disabled =
-      true;
-  }
-
-
-  if ($("#restartSyncButton")) {
-
-    $("#restartSyncButton")
-      .disabled =
-      true;
-  }
-
-
-  if ($("#saveSyncButton")) {
-
-    $("#saveSyncButton")
-      .disabled =
-      true;
-  }
-
-
-  setSyncStatus("");
-}
-
-
-/* =========================================================
-   TEMPO DO PLAYER
-========================================================= */
-
-if (syncAudio) {
-
-  syncAudio.addEventListener(
-    "timeupdate",
-    () => {
-
-      if ($("#syncCurrentTime")) {
-
-        $("#syncCurrentTime")
-          .textContent =
-          formatSyncTime(
-            syncAudio.currentTime
-          );
-      }
-    }
-  );
-}
-
-
-/* =========================================================
-   MARCAR LINHA
-========================================================= */
-
-if ($("#markSyncButton")) {
-
-  $("#markSyncButton")
-    .onclick =
-    () => {
-
-      if (
-        !syncTrack ||
-        !syncLyricsLines.length
-      ) {
-        return;
-      }
-
-
-      if (
-        syncLineIndex >=
-        syncLyricsLines.length
-      ) {
-
-        setSyncStatus(
-          "Todas as linhas já foram marcadas.",
-          "ok"
-        );
-
-        return;
-      }
-
-
-      const time =
-        Number(
-          syncAudio.currentTime
-            .toFixed(1)
-        );
-
-
-      const text =
-        syncLyricsLines[
-          syncLineIndex
-        ];
-
-
-      syncData[
-        syncLineIndex
-      ] = {
-
-        time,
-        text
-      };
-
-
-      syncLineIndex++;
-
-
-      setSyncStatus(
-        `Linha marcada em ${formatSyncTime(time)}.`,
-        "ok"
-      );
-
-
-      updateSyncScreen();
-    };
-}
-
-
-/* =========================================================
-   VOLTAR UMA LINHA
-========================================================= */
-
-if ($("#undoSyncButton")) {
-
-  $("#undoSyncButton")
-    .onclick =
-    () => {
-
-      if (
-        syncLineIndex <= 0
-      ) {
-        return;
-      }
-
-
-      syncLineIndex--;
-
-
-      syncData.splice(
-        syncLineIndex,
-        1
-      );
-
-
-      const previous =
-        syncData[
-          syncLineIndex - 1
-        ];
-
-
-      if (
-        previous &&
-        syncAudio
-      ) {
-
-        syncAudio.currentTime =
-          Math.max(
-            0,
-            previous.time
-          );
-      }
-
-
-      setSyncStatus(
-        "Última marca removida."
-      );
-
-
-      updateSyncScreen();
-    };
-}
-
-
-/* =========================================================
-   RECOMEÇAR SINCRONIZAÇÃO
-========================================================= */
-
-if ($("#restartSyncButton")) {
-
-  $("#restartSyncButton")
-    .onclick =
-    () => {
-
-      if (!syncTrack) {
-        return;
-      }
-
-
-      const ok =
-        confirm(
-          "Apagar as marcações e começar novamente?"
-        );
-
-
-      if (!ok) {
-        return;
-      }
-
-
-      syncData =
-        [];
-
-      syncLineIndex =
-        0;
-
-
-      syncAudio.pause();
-
-      syncAudio.currentTime =
-        0;
-
-
-      setSyncStatus(
-        "Sincronização reiniciada."
-      );
-
-
-      updateSyncScreen();
-    };
-}
-
-
-/* =========================================================
-   ATUALIZAR TELA SINCRONIZADOR
-========================================================= */
-
-function updateSyncScreen() {
-
-  const total =
-    syncLyricsLines.length;
-
-
-  const done =
-    syncData.length;
-
-
-  if ($("#syncProgressText")) {
-
-    $("#syncProgressText")
-      .textContent =
-      `${done} / ${total}`;
-  }
-
-
-  if ($("#syncProgressFill")) {
-
-    const percent =
-      total
-        ? (
-          done /
-          total
-        ) * 100
-        : 0;
-
-
-    $("#syncProgressFill")
-      .style.width =
-      `${percent}%`;
-  }
-
-
-  if ($("#currentSyncLine")) {
-
-    if (
-      syncLineIndex <
-      total
-    ) {
-
-      $("#currentSyncLine")
-        .textContent =
-        syncLyricsLines[
-          syncLineIndex
-        ];
-
-    }
-
-    else if (total) {
-
-      $("#currentSyncLine")
-        .textContent =
-        "✅ Todas as linhas foram marcadas.";
-
-    }
-
-    else {
-
-      $("#currentSyncLine")
-        .textContent =
-        "Essa música não possui linhas para sincronizar.";
-    }
-  }
-
-
-  if ($("#undoSyncButton")) {
-
-    $("#undoSyncButton")
-      .disabled =
-      syncLineIndex === 0;
-  }
-
-
-  if ($("#saveSyncButton")) {
-
-    $("#saveSyncButton")
-      .disabled =
-      !(
-        total &&
-        done === total
-      );
-  }
-
-
-  renderSyncLines();
-}
-
-
-/* =========================================================
-   MOSTRAR LINHAS SINCRONIZADAS
-========================================================= */
-
-function renderSyncLines() {
-
-  const container =
-    $("#syncLines");
-
-  if (!container) return;
-
-
-  if (
-    !syncLyricsLines.length
-  ) {
-
-    container.innerHTML =
-`
-<div class="empty">
-Nenhuma linha disponível.
-</div>
-`;
-
-    return;
-  }
-
-
-  container.innerHTML =
-    syncLyricsLines
-      .map(
-        (line, index) => {
-
-          const marked =
-            syncData[index];
-
-
-          const current =
-            index ===
-            syncLineIndex;
-
-
-          return `
-<div
-  style="
-    padding:11px 12px;
-    border-radius:11px;
-    border:1px solid ${
-      current
-        ? "#f0ad2f66"
-        : "#ffffff10"
-    };
-    background:${
-      current
-        ? "#f0ad2f12"
-        : "#ffffff04"
-    };
-  "
->
-
-  <div
-    style="
-      display:flex;
-      gap:10px;
-      align-items:flex-start;
-    "
-  >
-
-    <strong
-      style="
-        min-width:52px;
-        color:${
-          marked
-            ? "#ffd36b"
-            : "#6f7e8e"
-        };
-        font-size:11px;
-      "
-    >
-      ${
-        marked
-          ? formatSyncTime(
-              marked.time
-            )
-          : "--:--"
-      }
-    </strong>
-
-    <span
-      style="
-        color:${
-          current
-            ? "#ffffff"
-            : "#c6d0da"
-        };
-        font-size:13px;
-        line-height:1.4;
-      "
-    >
-      ${escapeHtml(line)}
-    </span>
-
-  </div>
-
-</div>
-`;
-        }
-      )
-      .join("");
-
-
-  /*
-    Faz a linha atual
-    aparecer automaticamente.
-  */
-
-  const items =
-    container.children;
-
-
-  if (
-    items[
-      syncLineIndex
-    ]
-  ) {
-
-    items[
-      syncLineIndex
-    ]
-      .scrollIntoView({
-        behavior:
-          "smooth",
-
-        block:
-          "center"
-      });
-  }
-}
-
-
-/* =========================================================
-   SALVAR LETRA SINCRONIZADA
-========================================================= */
-
-if ($("#saveSyncButton")) {
-
-  $("#saveSyncButton")
-    .onclick =
-    async () => {
-
-      if (
-        !syncTrack ||
-        !syncData.length
-      ) {
-
-        return;
-      }
-
-
-      if (
-        syncData.length !==
-        syncLyricsLines.length
-      ) {
-
-        setSyncStatus(
-          "Marque todas as linhas antes de salvar.",
-          "error"
-        );
-
-        return;
-      }
-
-
-      const button =
-        $("#saveSyncButton");
-
-
-      button.disabled =
-        true;
-
-
-      try {
-
-        setSyncStatus(
-          "Salvando sincronização..."
-        );
-
-
-        const response =
-          await authenticatedFetch(
-
-            `${SUPABASE_URL}/rest/v1/tracks?id=eq.${encodeURIComponent(syncTrack.id)}`,
-
-            {
-
-              method:
-                "PATCH",
-
-              headers: {
-
-                "Content-Type":
-                  "application/json",
-
-                "Prefer":
-                  "return=representation"
-              },
-
-              body:
-                JSON.stringify({
-
-                  lyrics_synced:
-                    syncData
-
-                })
-            }
-          );
-
-
-        const data =
-          await response
-            .json()
-            .catch(
-              () => []
-            );
-
-
-        if (!response.ok) {
-
-          throw new Error(
-            data.message ||
-            data.hint ||
-            "Não foi possível salvar a sincronização."
-          );
-        }
-
-
-        syncTrack.lyrics_synced =
-          [
-            ...syncData
-          ];
-
-
-        const local =
-          publishedTracks.find(
-            item =>
-              String(item.id) ===
-              String(syncTrack.id)
-          );
-
-
-        if (local) {
-
-          local.lyrics_synced =
-            [
-              ...syncData
-            ];
-        }
-
-
-        setSyncStatus(
-          "✅ Letra sincronizada e salva no Vem Comigo PLAY.",
-          "ok"
-        );
-
-
-      } catch (error) {
-
-        console.error(error);
-
-
-        setSyncStatus(
-          error.message,
-          "error"
-        );
-
-      } finally {
-
-        button.disabled =
-          false;
-      }
-    };
-}
-
-
-/* =========================================================
-   MOSTRAR MÚSICAS PUBLICADAS
+   BIBLIOTECA
 ========================================================= */
 
 function renderTracks() {
@@ -1909,17 +1033,15 @@ function renderTracks() {
   const list =
     $("#musicList");
 
-  if (!list) return;
-
 
   if (!publishedTracks.length) {
 
     list.innerHTML =
-`
-<div class="empty">
-Nenhuma música publicada ainda.
-</div>
-`;
+      `
+      <div class="empty">
+        Nenhuma música publicada.
+      </div>
+      `;
 
     return;
   }
@@ -1929,11 +1051,6 @@ Nenhuma música publicada ainda.
     publishedTracks
       .map(
         track => {
-
-          const cover =
-            track.cover_url ||
-            "logo-play.png";
-
 
           const hasLyrics =
             Boolean(
@@ -1949,78 +1066,79 @@ Nenhuma música publicada ainda.
             track.lyrics_synced.length;
 
 
-          return `
-<div
-  class="music-item"
-  data-id="${track.id}"
->
+          return (
+`
+<div class="music-item">
 
   <img
-    src="${escapeHtml(cover)}"
-    alt="${escapeHtml(track.title)}"
+    src="${escapeHtml(
+      track.cover_url ||
+      "logo-play.png"
+    )}"
+    alt=""
   >
 
   <div class="music-info">
 
     <strong>
-      ${escapeHtml(track.title)}
+      ${escapeHtml(
+        track.title
+      )}
     </strong>
 
     <span>
-      ${escapeHtml(track.artist)}
+      ${escapeHtml(
+        track.artist
+      )}
       •
-      ${escapeHtml(track.album)}
+      ${escapeHtml(
+        track.album
+      )}
     </span>
 
     <span>
-      ${escapeHtml(track.category)}
+      ${escapeHtml(
+        track.category
+      )}
+
       ${
         hasLyrics
           ? " • 🎤 Letra"
           : ""
       }
+
       ${
         synced
           ? " • ✨ Sincronizada"
           : ""
       }
+
     </span>
 
   </div>
-
 
   <div class="music-actions">
 
     <button
       class="preview"
-      data-url="${escapeHtml(track.audio_url)}"
-      title="Ouvir"
+      data-url="${escapeHtml(
+        track.audio_url
+      )}"
     >
       ▶
     </button>
 
-
-    ${
-      hasLyrics
-        ? `
-<button
-  class="view-lyrics"
-  data-id="${track.id}"
-  title="Ver letra"
->
-  🎤
-</button>
-`
-        : ""
-    }
-
-
     <button
       class="delete"
       data-id="${track.id}"
-      data-audio="${escapeHtml(track.audio_path || "")}"
-      data-cover="${escapeHtml(track.cover_path || "")}"
-      title="Excluir"
+      data-audio="${escapeHtml(
+        track.audio_path ||
+        ""
+      )}"
+      data-cover="${escapeHtml(
+        track.cover_path ||
+        ""
+      )}"
     >
       🗑
     </button>
@@ -2028,7 +1146,8 @@ Nenhuma música publicada ainda.
   </div>
 
 </div>
-`;
+`
+          );
         }
       )
       .join("");
@@ -2057,39 +1176,6 @@ Nenhuma música publicada ainda.
 
   document
     .querySelectorAll(
-      ".view-lyrics"
-    )
-    .forEach(
-      button => {
-
-        button.onclick =
-          () => {
-
-            const track =
-              publishedTracks.find(
-                item =>
-                  String(item.id) ===
-                  String(
-                    button.dataset.id
-                  )
-              );
-
-
-            if (!track) return;
-
-
-            alert(
-              `${track.title}\n` +
-              `${track.artist}\n\n` +
-              `${track.lyrics}`
-            );
-          };
-      }
-    );
-
-
-  document
-    .querySelectorAll(
       ".delete"
     )
     .forEach(
@@ -2098,8 +1184,11 @@ Nenhuma música publicada ainda.
         button.onclick =
           () =>
             deleteTrack(
+
               button.dataset.id,
+
               button.dataset.audio,
+
               button.dataset.cover
             );
       }
@@ -2108,30 +1197,7 @@ Nenhuma música publicada ainda.
 
 
 /* =========================================================
-   EXCLUIR STORAGE
-========================================================= */
-
-async function deleteStorageFile(
-  path
-) {
-
-  if (!path) return;
-
-
-  await authenticatedFetch(
-
-    `${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`,
-
-    {
-      method:
-        "DELETE"
-    }
-  );
-}
-
-
-/* =========================================================
-   EXCLUIR MÚSICA
+   DELETE
 ========================================================= */
 
 async function deleteTrack(
@@ -2140,91 +1206,84 @@ async function deleteTrack(
   coverPath
 ) {
 
-  const confirmation =
-    confirm(
-      "Excluir esta música do Vem Comigo PLAY?"
-    );
+  if (
+    !confirm(
+      "Excluir esta música?"
+    )
+  ) {
 
-
-  if (!confirmation) {
     return;
   }
 
 
-  try {
+  const response =
+    await authenticatedFetch(
 
-    setStatus(
-      "Excluindo..."
+      `${SUPABASE_URL}/rest/v1/tracks?id=eq.${encodeURIComponent(id)}`,
+
+      {
+        method:
+          "DELETE"
+      }
     );
 
 
-    const response =
-      await authenticatedFetch(
+  if (!response.ok) {
 
-        `${SUPABASE_URL}/rest/v1/tracks?id=eq.${encodeURIComponent(id)}`,
-
-        {
-          method:
-            "DELETE"
-        }
-      );
-
-
-    if (!response.ok) {
-
-      throw new Error(
-        "Não foi possível excluir."
-      );
-    }
-
-
-    await deleteStorageFile(
-      audioPath
+    alert(
+      "Erro ao excluir."
     );
 
-
-    await deleteStorageFile(
-      coverPath
-    );
+    return;
+  }
 
 
-    setStatus(
-      "Música excluída.",
-      "ok"
-    );
+  if (audioPath) {
 
+    await authenticatedFetch(
 
-    await loadTracks();
+      `${SUPABASE_URL}/storage/v1/object/${BUCKET}/${audioPath}`,
 
-
-  } catch (error) {
-
-    console.error(error);
-
-    setStatus(
-      error.message,
-      "error"
+      {
+        method:
+          "DELETE"
+      }
     );
   }
+
+
+  if (coverPath) {
+
+    await authenticatedFetch(
+
+      `${SUPABASE_URL}/storage/v1/object/${BUCKET}/${coverPath}`,
+
+      {
+        method:
+          "DELETE"
+      }
+    );
+  }
+
+
+  await loadTracks();
 }
 
 
 /* =========================================================
-   ARQUIVOS
+   FILE INPUT
 ========================================================= */
 
-const audioInput =
-  $("#audioFile");
+$("#audioFile")
+  ?.addEventListener(
 
-
-if (audioInput) {
-
-  audioInput.addEventListener(
     "change",
+
     () => {
 
       const file =
-        audioInput.files[0];
+        $("#audioFile")
+          .files[0];
 
 
       $("#audioName")
@@ -2234,21 +1293,18 @@ if (audioInput) {
           : "Escolher música";
     }
   );
-}
 
 
-const coverInput =
-  $("#coverFile");
+$("#coverFile")
+  ?.addEventListener(
 
-
-if (coverInput) {
-
-  coverInput.addEventListener(
     "change",
+
     () => {
 
       const file =
-        coverInput.files[0];
+        $("#coverFile")
+          .files[0];
 
 
       $("#coverName")
@@ -2258,33 +1314,20 @@ if (coverInput) {
           : "Escolher capa";
     }
   );
-}
 
 
 /* =========================================================
-   PUBLICAR MÚSICA
+   PUBLICAR
 ========================================================= */
 
-const form =
-  $("#musicForm");
+$("#musicForm")
+  ?.addEventListener(
 
-
-if (form) {
-
-  form.addEventListener(
     "submit",
+
     async event => {
 
       event.preventDefault();
-
-
-      if (!accessToken) {
-
-        const logged =
-          await login();
-
-        if (!logged) return;
-      }
 
 
       const artist =
@@ -2312,16 +1355,8 @@ if (form) {
 
       const lyrics =
         $("#lyrics")
-          ?.value
-          ?.trim() ||
-        "";
-
-
-      const lyricsGenerated =
-        $("#lyrics")
-          ?.dataset
-          ?.generated ===
-          "true";
+          .value
+          .trim();
 
 
       const audioFile =
@@ -2343,7 +1378,7 @@ if (form) {
       ) {
 
         setStatus(
-          "Preencha artista, álbum, música, categoria e escolha o MP3.",
+          "Preencha os campos obrigatórios.",
           "error"
         );
 
@@ -2361,44 +1396,26 @@ if (form) {
 
       try {
 
-        showProgress(
-          10,
-          "Preparando..."
-        );
-
-
         const artistFolder =
-          slug(artist);
+          slug(
+            artist
+          );
 
 
         const albumFolder =
-          slug(album);
+          slug(
+            album
+          );
 
 
         const songName =
-          slug(title);
-
-
-        const audioExt =
-          (
-            audioFile.name
-              .split(".")
-              .pop() ||
-            "mp3"
-          )
-            .toLowerCase();
+          slug(
+            title
+          );
 
 
         const audioPath =
-          `${artistFolder}/` +
-          `${albumFolder}/` +
-          `${songName}.${audioExt}`;
-
-
-        showProgress(
-          30,
-          "Enviando música..."
-        );
+          `${artistFolder}/${albumFolder}/${songName}.mp3`;
 
 
         await uploadFile(
@@ -2407,42 +1424,24 @@ if (form) {
         );
 
 
-        const audioURL =
-          publicUrl(
-            audioPath
-          );
+        let coverPath =
+          "";
 
 
         let coverURL =
           "logo-play.png";
 
 
-        let coverPath =
-          "";
-
-
         if (coverFile) {
 
-          showProgress(
-            55,
-            "Enviando capa..."
-          );
-
-
-          const coverExt =
-            (
-              coverFile.name
-                .split(".")
-                .pop() ||
-              "jpg"
-            )
-              .toLowerCase();
+          const ext =
+            coverFile.name
+              .split(".")
+              .pop();
 
 
           coverPath =
-            `${artistFolder}/` +
-            `${albumFolder}/` +
-            `capa.${coverExt}`;
+            `${artistFolder}/${albumFolder}/capa.${ext}`;
 
 
           await uploadFile(
@@ -2456,12 +1455,6 @@ if (form) {
               coverPath
             );
         }
-
-
-        showProgress(
-          80,
-          "Publicando..."
-        );
 
 
         await saveTrack({
@@ -2478,7 +1471,9 @@ if (form) {
               : "music",
 
           audio_url:
-            audioURL,
+            publicUrl(
+              audioPath
+            ),
 
           audio_path:
             audioPath,
@@ -2494,28 +1489,29 @@ if (form) {
             null,
 
           lyrics_generated:
-            lyricsGenerated,
+            $("#lyrics")
+              .dataset
+              .generated ===
+              "true",
 
           lyrics_synced:
             null
         });
 
 
-        showProgress(
-          100,
-          "Publicado!"
-        );
-
-
         setStatus(
-          lyrics
-            ? "Música e letra publicadas com sucesso."
-            : "Música publicada com sucesso.",
+          "✅ Música publicada.",
           "ok"
         );
 
 
-        form.reset();
+        $("#musicForm")
+          .reset();
+
+
+        $("#lyrics")
+          .dataset.generated =
+          "false";
 
 
         $("#audioName")
@@ -2528,33 +1524,20 @@ if (form) {
           "Escolher capa";
 
 
-        $("#lyrics")
-          .dataset.generated =
-          "false";
-
-
-        setLyricsStatus("");
-
-
         await loadTracks();
-
-
-        hideProgress();
 
 
       } catch (error) {
 
-        console.error(error);
-
-
-        setStatus(
-          error.message ||
-          "Erro ao publicar.",
-          "error"
+        console.error(
+          error
         );
 
 
-        hideProgress();
+        setStatus(
+          error.message,
+          "error"
+        );
 
 
       } finally {
@@ -2564,35 +1547,545 @@ if (form) {
       }
     }
   );
+
+
+/* =========================================================
+   SINCRONIZADOR - LISTA
+========================================================= */
+
+function renderSyncSelect() {
+
+  const select =
+    $("#syncTrackSelect");
+
+
+  const tracksWithLyrics =
+    publishedTracks.filter(
+
+      track =>
+        track.audio_url &&
+        track.lyrics &&
+        track.lyrics.trim()
+
+    );
+
+
+  select.innerHTML =
+    `
+      <option value="">
+        Selecione uma música
+      </option>
+    ` +
+    tracksWithLyrics
+      .map(
+
+        track =>
+`
+<option value="${track.id}">
+${escapeHtml(track.artist)}
+—
+${escapeHtml(track.title)}
+</option>
+`
+      )
+      .join("");
 }
 
 
 /* =========================================================
-   ALTERAÇÃO MANUAL DA LETRA
+   PEGAR LINHAS
 ========================================================= */
 
-const lyricsBox =
-  $("#lyrics");
+function extractLyricsLines(
+  lyrics
+) {
+
+  return String(
+    lyrics ||
+    ""
+  )
+
+    .split(
+      "\n"
+    )
+
+    .map(
+      line =>
+        line.trim()
+    )
+
+    .filter(
+      line =>
+        line &&
+        !(
+          line.startsWith(
+            "["
+          ) &&
+          line.endsWith(
+            "]"
+          )
+        )
+    );
+}
 
 
-if (lyricsBox) {
+/* =========================================================
+   ESCOLHER FAIXA
+========================================================= */
 
-  lyricsBox.addEventListener(
-    "input",
+$("#syncTrackSelect")
+  ?.addEventListener(
+
+    "change",
+
+    () => {
+
+      const id =
+        $("#syncTrackSelect")
+          .value;
+
+
+      syncTrack =
+        publishedTracks.find(
+
+          track =>
+            String(track.id) ===
+            String(id)
+
+        );
+
+
+      if (!syncTrack) {
+
+        return;
+      }
+
+
+      syncLyricsLines =
+        extractLyricsLines(
+          syncTrack.lyrics
+        );
+
+
+      syncData =
+        [];
+
+
+      syncLineIndex =
+        0;
+
+
+      $("#syncTrackInfo")
+        .style.display =
+        "block";
+
+
+      $("#syncTrackTitle")
+        .textContent =
+        syncTrack.title;
+
+
+      $("#syncTrackArtist")
+        .textContent =
+        `${syncTrack.artist} • ${syncTrack.album}`;
+
+
+      $("#syncCover")
+        .src =
+        syncTrack.cover_url ||
+        "logo-play.png";
+
+
+      syncAudio.src =
+        syncTrack.audio_url;
+
+
+      syncAudio.currentTime =
+        0;
+
+
+      if (
+        Array.isArray(
+          syncTrack.lyrics_synced
+        )
+      ) {
+
+        syncData =
+          [
+            ...syncTrack
+              .lyrics_synced
+          ];
+
+
+        syncLineIndex =
+          syncData.length;
+      }
+
+
+      $("#markSyncButton")
+        .disabled =
+        false;
+
+
+      $("#restartSyncButton")
+        .disabled =
+        false;
+
+
+      updateSyncScreen();
+
+
+      setSyncStatus(
+        "Dê play e marque cada linha quando ela começar."
+      );
+    }
+  );
+
+
+/* =========================================================
+   TEMPO
+========================================================= */
+
+syncAudio
+  ?.addEventListener(
+
+    "timeupdate",
+
+    () => {
+
+      $("#syncCurrentTime")
+        .textContent =
+        formatSyncTime(
+          syncAudio.currentTime
+        );
+    }
+  );
+
+
+/* =========================================================
+   MARCAR LINHA
+========================================================= */
+
+$("#markSyncButton")
+  ?.addEventListener(
+
+    "click",
+
     () => {
 
       if (
-        !lyricsBox
-          .dataset.generated
+        syncLineIndex >=
+        syncLyricsLines.length
       ) {
 
-        lyricsBox
-          .dataset.generated =
-          "false";
+        return;
       }
+
+
+      const time =
+        Number(
+          syncAudio
+            .currentTime
+            .toFixed(
+              1
+            )
+        );
+
+
+      syncData[
+        syncLineIndex
+      ] = {
+
+        time,
+
+        text:
+          syncLyricsLines[
+            syncLineIndex
+          ]
+      };
+
+
+      syncLineIndex++;
+
+
+      updateSyncScreen();
     }
   );
+
+
+/* =========================================================
+   VOLTAR LINHA
+========================================================= */
+
+$("#undoSyncButton")
+  ?.addEventListener(
+
+    "click",
+
+    () => {
+
+      if (
+        syncLineIndex <=
+        0
+      ) {
+
+        return;
+      }
+
+
+      syncLineIndex--;
+
+
+      syncData.splice(
+        syncLineIndex,
+        1
+      );
+
+
+      updateSyncScreen();
+    }
+  );
+
+
+/* =========================================================
+   RECOMEÇAR
+========================================================= */
+
+$("#restartSyncButton")
+  ?.addEventListener(
+
+    "click",
+
+    () => {
+
+      syncData =
+        [];
+
+
+      syncLineIndex =
+        0;
+
+
+      syncAudio.pause();
+
+
+      syncAudio.currentTime =
+        0;
+
+
+      updateSyncScreen();
+    }
+  );
+
+
+/* =========================================================
+   ATUALIZAR SINCRONIZADOR
+========================================================= */
+
+function updateSyncScreen() {
+
+  const total =
+    syncLyricsLines.length;
+
+
+  $("#syncProgressText")
+    .textContent =
+    `${syncData.length} / ${total}`;
+
+
+  const percent =
+    total
+      ? (
+        syncData.length /
+        total
+      ) * 100
+      : 0;
+
+
+  $("#syncProgressFill")
+    .style.width =
+    `${percent}%`;
+
+
+  if (
+    syncLineIndex <
+    total
+  ) {
+
+    $("#currentSyncLine")
+      .textContent =
+      syncLyricsLines[
+        syncLineIndex
+      ];
+
+  } else {
+
+    $("#currentSyncLine")
+      .textContent =
+      "✅ Todas as linhas marcadas.";
+  }
+
+
+  $("#undoSyncButton")
+    .disabled =
+    syncLineIndex ===
+    0;
+
+
+  $("#saveSyncButton")
+    .disabled =
+    !(
+      total &&
+      syncData.length ===
+      total
+    );
+
+
+  renderSyncLines();
 }
+
+
+/* =========================================================
+   MOSTRAR LETRA
+========================================================= */
+
+function renderSyncLines() {
+
+  const container =
+    $("#syncLines");
+
+
+  container.innerHTML =
+    syncLyricsLines
+      .map(
+
+        (line, index) => {
+
+          const marked =
+            syncData[index];
+
+
+          const active =
+            index ===
+            syncLineIndex;
+
+
+          return (
+`
+<div
+  style="
+    padding:11px;
+    border-radius:11px;
+    border:1px solid ${
+      active
+        ? "#f0ad2f66"
+        : "#ffffff10"
+    };
+    background:${
+      active
+        ? "#f0ad2f12"
+        : "#ffffff04"
+    };
+  "
+>
+
+  <strong
+    style="
+      color:#ffd36b;
+      margin-right:8px;
+    "
+  >
+    ${
+      marked
+        ? formatSyncTime(
+          marked.time
+        )
+        : "--:--"
+    }
+  </strong>
+
+  ${escapeHtml(
+    line
+  )}
+
+</div>
+`
+          );
+        }
+      )
+      .join("");
+}
+
+
+/* =========================================================
+   SALVAR SINCRONIZAÇÃO
+========================================================= */
+
+$("#saveSyncButton")
+  ?.addEventListener(
+
+    "click",
+
+    async () => {
+
+      if (!syncTrack) {
+        return;
+      }
+
+
+      const response =
+        await authenticatedFetch(
+
+          `${SUPABASE_URL}/rest/v1/tracks?id=eq.${encodeURIComponent(syncTrack.id)}`,
+
+          {
+
+            method:
+              "PATCH",
+
+            headers: {
+
+              "Content-Type":
+                "application/json",
+
+              Prefer:
+                "return=representation"
+            },
+
+            body:
+              JSON.stringify({
+
+                lyrics_synced:
+                  syncData
+
+              })
+          }
+        );
+
+
+      if (!response.ok) {
+
+        setSyncStatus(
+          "Erro ao salvar sincronização.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      syncTrack.lyrics_synced =
+        [
+          ...syncData
+        ];
+
+
+      setSyncStatus(
+        "✅ Letra sincronizada e salva.",
+        "ok"
+      );
+    }
+  );
 
 
 /* =========================================================
@@ -2601,29 +2094,30 @@ if (lyricsBox) {
 
 async function startAdmin() {
 
-  sessionStorage.removeItem(
-    "vcplay-token"
-  );
-
-  sessionStorage.removeItem(
-    "vcplay-refresh-token"
-  );
-
-
-  accessToken =
-    "";
-
-  refreshToken =
-    "";
-
-
   const logged =
     await login();
 
 
-  if (logged) {
+  if (!logged) {
+    return;
+  }
+
+
+  try {
 
     await loadTracks();
+
+  } catch (error) {
+
+    console.error(
+      error
+    );
+
+
+    setStatus(
+      error.message,
+      "error"
+    );
   }
 }
 
