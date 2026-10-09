@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1,viewport-fit=cover"
+  >
+
+  <meta name="theme-color" content="#020812">
+
+  <title>Painel Vem Comigo PLAY</title>
+
+  <link rel="stylesheet" href="admin.css">
+</head>
+
+<body>
+
+  <header class="topbar">
+
+    <div class="brand">
+
+      <img
+        src="logo-play.png"
+        alt="Vem Comigo PLAY"
+      >
+
+      <div>
+        <strong>Painel Vem Comigo PLAY</strong>
+        <span>Vem Comigo Records</span>
+      </div>
+
+    </div>
+
+    <a href="index.html" class="back">
+      Ver site
+    </a>
+
+  </header>
+
+
+  <main>
+
+    <!-- =====================================================
+         PUBLICAR MÚSICA
+    ====================================================== -->
+
+    <section class="panel">
+
+      <div class="panel-title">
+
+        <small>CATÁLOGO</small>
+
+        <h1>
+          Publicar música
+        </h1>
+
+        <p>
+          Publique músicas próprias ou autorizadas
+          no Vem Comigo PLAY.
+        </p>
+
+      </div>
+
+
+      <form id="musicForm">
+
+        <!-- ARTISTA LIVRE -->
+
+        <label>
+
+          Artista
+
+          <input
+            id="artist"
+            type="text"
+            list="artistSuggestions"
+            placeholder="Ex: Henrique Santana"
+            autocomplete="off"
+            required
+          >
+
+          <datalist id="artistSuggestions"></datalist>
+
+        </label>
+
+
+        <!-- ÁLBUM -->
+
+        <label>
+
+          Álbum
+
+          <input
+            id="album"
+            type="text"
+            placeholder="Ex: Deus Não Perdeu o Controle"
+            required
+          >
+
+        </label>
+
+
+        <!-- MÚSICA -->
+
+        <label>
+
+          Nome da música
+
+          <input
+            id="title"
+            type="text"
+            placeholder="Ex: No Tempo de Deus"
+            required
+          >
+
+        </label>
+
+
+        <!-- CATEGORIA -->
+
+        <label>
+
+          Categoria
+
+          <select id="category" required>
+
+            <option value="">
+              Selecione
+            </option>
+
+            <option value="Adoração">
+              Adoração
+            </option>
+
+            <option value="Sertanejo Gospel">
+              Sertanejo Gospel
+            </option>
+
+            <option value="Forró Gospel">
+              Forró Gospel
+            </option>
+
+            <option value="Arrocha Gospel">
+              Arrocha Gospel
+            </option>
+
+            <option value="Seresta Gospel">
+              Seresta Gospel
+            </option>
+
+            <option value="Pop Worship">
+              Pop Worship
+            </option>
+
+            <option value="Christian Pop">
+              Christian Pop
+            </option>
+
+            <option value="Acoustic Worship">
+              Acoustic Worship
+            </option>
+
+            <option value="Bachata Gospel">
+              Bachata Gospel
+            </option>
+
+            <option value="Gospel Vaqueiro">
+              Gospel Vaqueiro
+            </option>
+
+            <option value="Podcasts">
+              Podcasts
+            </option>
+
+          </select>
+
+        </label>
+
+        <!-- MP3 -->
+
+        <label class="file-label">
+
+          Arquivo MP3
+
+          <input
+            id="audioFile"
+            type="file"
+            accept=".mp3,audio/mpeg"
+            required
+          >
+
+          <span id="audioName">
+            Escolher música
+          </span>
+
+        </label>
+
+
+        <!-- CAPA -->
+
+        <label class="file-label">
+
+          Capa
+
+          <input
+            id="coverFile"
+            type="file"
+            accept="image/*"
+          >
+
+          <span id="coverName">
+            Escolher capa
+          </span>
+
+        </label>
+
+
+        <!-- PROGRESSO -->
+
+        <div
+          id="progressArea"
+          class="progress-area hidden"
+        >
+
+          <div class="progress-info">
+
+            <span id="progressText">
+              Enviando...
+            </span>
+
+            <strong id="progressPercent">
+              0%
+            </strong>
+
+          </div>
+
+
+          <div class="progress-bar">
+
+            <div id="progressFill"></div>
+
+          </div>
+
+        </div>
+
+
+        <button
+          type="submit"
+          id="uploadButton"
+          class="primary"
+        >
+          Publicar música
+        </button>
+
+      </form>
+
+
+      <div
+        id="status"
+        class="status"
+      ></div>
+
+    </section>
+
+
+
+
+
+    <!-- =====================================================
+         BIBLIOTECA
+    ====================================================== -->
+
+    <section class="panel">
+
+      <div class="panel-title">
+
+        <small>BIBLIOTECA</small>
+
+        <h2>
+          Músicas publicadas
+        </h2>
+
+      </div>
+
+
+      <div
+        id="musicList"
+        class="music-list"
+      >
+
+        <div class="empty">
+          Nenhuma música carregada ainda.
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- IMPORTANTE:
+       NÃO COLOCAR OUTRO SCRIPT AQUI.
+       Toda a lógica fica no admin.js.
+  -->
+
+  <script src="admin.js"></script>
+
+</body>
+
+</html>
