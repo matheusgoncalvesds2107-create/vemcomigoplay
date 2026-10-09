@@ -2,7 +2,10 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1,viewport-fit=cover"
+  >
   <meta name="theme-color" content="#020812">
 
   <title>Painel Vem Comigo PLAY</title>
@@ -13,112 +16,275 @@
 <body>
 
   <header class="topbar">
+
     <div class="brand">
-      <img src="logo-play.png" alt="Vem Comigo PLAY">
+
+      <img
+        src="logo-play.png"
+        alt="Vem Comigo PLAY"
+      >
 
       <div>
-        <strong>Painel Vem Comigo PLAY</strong>
-        <span>Vem Comigo Records</span>
+        <strong>
+          Painel Vem Comigo PLAY
+        </strong>
+
+        <span>
+          Vem Comigo Records
+        </span>
       </div>
+
     </div>
 
-    <a href="index.html" class="back">
+    <a
+      href="index.html"
+      class="back"
+    >
       Ver site
     </a>
+
   </header>
 
+
   <main>
+
+    <!-- =========================
+         ENVIAR MÚSICA
+    ========================== -->
 
     <section class="panel">
 
       <div class="panel-title">
-        <small>CATÁLOGO</small>
-        <h1>Enviar música</h1>
+
+        <small>
+          CATÁLOGO
+        </small>
+
+        <h1>
+          Publicar música
+        </h1>
+
         <p>
-          Envie seus próprios louvores e publique direto no Vem Comigo PLAY.
+          Envie músicas próprias ou autorizadas
+          para o Vem Comigo PLAY.
         </p>
+
       </div>
+
 
       <form id="musicForm">
 
+        <!-- ARTISTA LIVRE -->
+
         <label>
           Artista
-          <select id="artist" required>
-            <option value="">Selecione</option>
 
-            <option value="Lucas & Ana Paula">
-              Lucas & Ana Paula
-            </option>
+          <input
+            id="artist"
+            type="text"
+            list="artistSuggestions"
+            placeholder="Ex: Henrique Santana"
+            autocomplete="off"
+            required
+          >
 
-            <option value="Letícia Lima">
-              Letícia Lima
-            </option>
+          <datalist id="artistSuggestions">
 
-            <option value="Breno Silva">
-              Breno Silva
-            </option>
+            <option value="Lucas & Ana Paula"></option>
 
-            <option value="Léo Lima & Fernandes">
-              Léo Lima & Fernandes
-            </option>
+            <option value="Letícia Lima"></option>
 
-            <option value="Lucas Henrique">
-              Lucas Henrique
-            </option>
+            <option value="Breno Silva"></option>
 
-            <option value="Mathias Fernandes">
-              Mathias Fernandes
-            </option>
+            <option value="Léo Lima & Fernandes"></option>
 
-            <option value="Noah James">
-              Noah James
-            </option>
+            <option value="Lucas Henrique"></option>
 
-            <option value="Luke Carter">
-              Luke Carter
-            </option>
+            <option value="Mathias Fernandes"></option>
 
-            <option value="Ethan Grace">
-              Ethan Grace
-            </option>
-          </select>
+            <option value="Henrique Santana"></option>
+
+            <option value="Noah James"></option>
+
+            <option value="Luke Carter"></option>
+
+            <option value="Ethan Grace"></option>
+
+          </datalist>
+
         </label>
+
+
+        <!-- ÁLBUM -->
 
         <label>
           Álbum
+
           <input
             id="album"
             type="text"
-            placeholder="Ex: Estrada de Fé"
+            placeholder="Ex: Deus Não Perdeu o Controle"
             required
           >
+
         </label>
+
+
+        <!-- MÚSICA -->
 
         <label>
           Nome da música
+
           <input
             id="title"
             type="text"
-            placeholder="Ex: Deus Está Comigo"
+            placeholder="Ex: No Tempo de Deus"
             required
           >
+
         </label>
+
+
+        <!-- CATEGORIA -->
 
         <label>
           Categoria
-          <select id="category" required>
-            <option value="">Selecione</option>
-            <option value="Adoração">Adoração</option>
-            <option value="Sertanejo Gospel">Sertanejo Gospel</option>
-            <option value="Forró Gospel">Forró Gospel</option>
-            <option value="Arrocha Gospel">Arrocha Gospel</option>
-            <option value="Seresta Gospel">Seresta Gospel</option>
-            <option value="Pop Worship">Pop Worship</option>
-            <option value="Podcasts">Podcasts</option>
+
+          <select
+            id="category"
+            required
+          >
+
+            <option value="">
+              Selecione
+            </option>
+
+            <option value="Adoração">
+              Adoração
+            </option>
+
+            <option value="Sertanejo Gospel">
+              Sertanejo Gospel
+            </option>
+
+            <option value="Forró Gospel">
+              Forró Gospel
+            </option>
+
+            <option value="Arrocha Gospel">
+              Arrocha Gospel
+            </option>
+
+            <option value="Seresta Gospel">
+              Seresta Gospel
+            </option>
+
+            <option value="Pop Worship">
+              Pop Worship
+            </option>
+
+            <option value="Christian Pop">
+              Christian Pop
+            </option>
+
+            <option value="Acoustic Worship">
+              Acoustic Worship
+            </option>
+
+            <option value="Bachata Gospel">
+              Bachata Gospel
+            </option>
+
+            <option value="Gospel Vaqueiro">
+              Gospel Vaqueiro
+            </option>
+
+            <option value="Podcasts">
+              Podcasts
+            </option>
+
           </select>
+
         </label>
 
+
+        <!-- TEMA DA LETRA -->
+
+        <label>
+          Tema da letra
+
+          <input
+            id="lyricsTheme"
+            type="text"
+            placeholder="Ex: fé, promessa, esperança, não desistir"
+          >
+
+        </label>
+
+
+        <!-- LETRA -->
+
+        <label>
+          Letra da música
+
+          <textarea
+            id="lyrics"
+            placeholder="A letra pode ser gerada automaticamente ou colada aqui."
+            rows="18"
+          ></textarea>
+
+        </label>
+
+
+        <!-- BOTÕES DA LETRA -->
+
+        <div
+          style="
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+          "
+        >
+
+          <button
+            type="button"
+            id="generateLyricsButton"
+            class="primary"
+          >
+            ✨ Gerar letra automaticamente
+          </button>
+
+          <button
+            type="button"
+            id="clearLyricsButton"
+            style="
+              border:1px solid #ffffff20;
+              background:#102033;
+              color:#fff;
+              padding:14px 16px;
+              border-radius:14px;
+              font-weight:800;
+              cursor:pointer;
+            "
+          >
+            Limpar letra
+          </button>
+
+        </div>
+
+
+        <!-- STATUS DA LETRA -->
+
+        <div
+          id="lyricsStatus"
+          class="status"
+        ></div>
+
+
+        <!-- MP3 -->
+
         <label class="file-label">
+
           Arquivo MP3
 
           <input
@@ -131,9 +297,14 @@
           <span id="audioName">
             Escolher música
           </span>
+
         </label>
 
+
+        <!-- CAPA -->
+
         <label class="file-label">
+
           Capa
 
           <input
@@ -145,11 +316,19 @@
           <span id="coverName">
             Escolher capa
           </span>
+
         </label>
 
-        <div class="progress-area hidden" id="progressArea">
+
+        <!-- PROGRESSO -->
+
+        <div
+          class="progress-area hidden"
+          id="progressArea"
+        >
 
           <div class="progress-info">
+
             <span id="progressText">
               Enviando...
             </span>
@@ -157,23 +336,30 @@
             <strong id="progressPercent">
               0%
             </strong>
+
           </div>
 
           <div class="progress-bar">
+
             <div id="progressFill"></div>
+
           </div>
 
         </div>
+
+
+        <!-- PUBLICAR -->
 
         <button
           type="submit"
           id="uploadButton"
           class="primary"
         >
-          Enviar música
+          Publicar música
         </button>
 
       </form>
+
 
       <div
         id="status"
@@ -182,14 +368,36 @@
 
     </section>
 
+
+
+    <!-- =========================
+         BIBLIOTECA
+    ========================== -->
+
     <section class="panel">
 
       <div class="panel-title">
-        <small>BIBLIOTECA</small>
-        <h2>Músicas publicadas</h2>
+
+        <small>
+          BIBLIOTECA
+        </small>
+
+        <h2>
+          Músicas publicadas
+        </h2>
+
+        <p>
+          Músicas já disponíveis
+          no Vem Comigo PLAY.
+        </p>
+
       </div>
 
-      <div id="musicList" class="music-list">
+
+      <div
+        id="musicList"
+        class="music-list"
+      >
 
         <div class="empty">
           Nenhuma música carregada ainda.
@@ -201,7 +409,68 @@
 
   </main>
 
+
   <script src="admin.js"></script>
+
+
+  <!-- =========================
+       CONTROLES BÁSICOS DA LETRA
+  ========================== -->
+
+  <script>
+
+    const lyricsBox =
+      document.getElementById(
+        "lyrics"
+      );
+
+    const clearLyricsButton =
+      document.getElementById(
+        "clearLyricsButton"
+      );
+
+    const generateLyricsButton =
+      document.getElementById(
+        "generateLyricsButton"
+      );
+
+    const lyricsStatus =
+      document.getElementById(
+        "lyricsStatus"
+      );
+
+
+    clearLyricsButton.onclick =
+      () => {
+
+        lyricsBox.value = "";
+
+        lyricsStatus.textContent =
+          "Letra limpa.";
+
+      };
+
+
+    generateLyricsButton.onclick =
+      () => {
+
+        if (
+          typeof window.generateAutomaticLyrics
+          === "function"
+        ) {
+
+          window.generateAutomaticLyrics();
+
+          return;
+
+        }
+
+        lyricsStatus.textContent =
+          "O gerador será ativado no admin.js.";
+
+      };
+
+  </script>
 
 </body>
 </html>
