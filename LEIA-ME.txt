@@ -1,0 +1,78 @@
+VEM COMIGO PLAY — PACOTE SEM LETRAS
+===================================
+
+SIM: o painel administrativo e o Vem Comigo PLAY estão no MESMO repositório:
+matheusgoncalvesds2107-create/vemcomigoplay
+
+Este pacote foi feito para os dois.
+
+O QUE MUDA
+----------
+SITE PÚBLICO:
+- some o botão/letra
+- clicar na capa ou no nome da música abre a capa grande
+- mantém nome, artista e álbum
+- lista fica com 3 botões: PLAY / FAVORITO / MAIS
+- dentro de MAIS ficam Playlist e Download
+- mantém o player de baixo completo
+- cores: azul-marinho, ouro e branco
+
+PAINEL:
+- esconde "Tema da letra"
+- esconde caixa de letra
+- esconde "Gerar letra automaticamente"
+- esconde "Limpar letra"
+- esconde o painel inteiro "Sincronizar letra"
+- publicação de MP3 + capa continua normal
+
+COMO INSTALAR
+-------------
+1) Coloque o arquivo:
+   sem-letras.js
+
+na RAIZ do repositório vemcomigoplay, junto de:
+index.html
+app.js
+style.css
+admin.html
+admin.js
+admin.css
+
+2) No INDEX.HTML, antes de:
+   </body>
+
+adicione:
+
+   <script src="sem-letras.js"></script>
+
+Fica assim no final:
+
+   <script src="app.js"></script>
+   <script src="sem-letras.js"></script>
+   </body>
+
+3) No ADMIN.HTML, antes de:
+   </body>
+
+adicione:
+
+   <script src="sem-letras.js"></script>
+
+Fica assim no final:
+
+   <script src="admin.js"></script>
+   <script src="sem-letras.js"></script>
+   </body>
+
+4) Salve os três arquivos no GitHub:
+   - sem-letras.js
+   - index.html (com a linha nova)
+   - admin.html (com a linha nova)
+
+IMPORTANTE
+----------
+Não precisa apagar app.js nem admin.js.
+O sem-letras.js trabalha por cima do código atual e mantém o upload/player funcionando.
+
+As colunas antigas de letras no Supabase podem continuar existindo.
+Elas simplesmente deixam de ser usadas na interface.
