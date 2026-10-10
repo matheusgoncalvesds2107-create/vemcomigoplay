@@ -1,935 +1,1735 @@
 <!doctype html>
 <html lang="pt-BR">
-
 <head>
-  <meta charset="utf-8">
+<meta charset="utf-8">
 
-  <meta
-    name="viewport"
-    content="width=device-width,initial-scale=1,viewport-fit=cover"
-  >
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
+>
 
-  <meta
-    name="theme-color"
-    content="#020812"
-  >
+<title>Web Rádio Vem Comigo Deus</title>
 
-  <title>Vem Comigo PLAY</title>
+<style>
 
-  <meta
-    name="description"
-    content="Vem Comigo PLAY — músicas e podcasts da Vem Comigo Records."
-  >
+:root{
+  --bg:#04101d;
+  --p:#0b2340;
+  --gold:#f4c64c;
+  --text:#fff;
+  --muted:#a9bad0;
+  --line:#f4c64c44;
+}
 
-  <link
-    rel="stylesheet"
-    href="style.css"
-  >
+*{
+  box-sizing:border-box;
+}
+
+html{
+  width:100%;
+  max-width:100%;
+  overflow-x:hidden;
+  scroll-behavior:smooth;
+}
+
+body{
+  margin:0;
+  width:100%;
+  max-width:100%;
+  overflow-x:hidden;
+  padding-bottom:42px;
+  background:linear-gradient(#06172b,#020710);
+  color:var(--text);
+  font-family:Arial,sans-serif;
+}
+
+/* =========================
+   CABEÇALHO
+========================= */
+
+header{
+  position:sticky;
+  top:0;
+  z-index:30;
+
+  width:100%;
+
+  background:#061426ee;
+  backdrop-filter:blur(8px);
+
+  border-bottom:1px solid var(--line);
+
+  padding:12px 5%;
+
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.brand{
+  font-size:20px;
+  font-weight:900;
+  color:var(--gold);
+}
+
+nav{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+nav a{
+  color:#fff;
+  text-decoration:none;
+  font-size:14px;
+}
+
+/* =========================
+   DESTAQUE / PLAYER
+========================= */
+
+.hero{
+  min-height:430px;
+
+  display:grid;
+  place-items:center;
+
+  text-align:center;
+
+  padding:45px 20px;
+
+  background:
+    radial-gradient(
+      circle at center,
+      #173d64aa,
+      transparent 48%
+    ),
+    linear-gradient(#0001,#0008);
+}
+
+.hero > div{
+  width:100%;
+  max-width:650px;
+  margin:auto;
+}
+
+.hero h1{
+  font-size:clamp(32px,6vw,62px);
+  line-height:1.05;
+  margin:8px 0 10px;
+}
+
+.hero p{
+  color:var(--muted);
+  margin:8px 0;
+}
+
+.play{
+  width:82px;
+  height:82px;
+
+  border-radius:50%;
+
+  border:3px solid var(--gold);
+
+  background:#07192dcc;
+  color:var(--gold);
+
+  font-size:30px;
+
+  cursor:pointer;
+
+  margin-top:12px;
+}
+
+.buttons{
+  display:flex;
+  gap:9px;
+  flex-wrap:wrap;
+  justify-content:center;
+
+  margin-top:20px;
+}
+
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+
+  min-height:44px;
+
+  padding:12px 16px;
+
+  border-radius:12px;
+
+  background:var(--p);
+
+  border:1px solid var(--line);
+
+  color:#fff;
+
+  text-decoration:none;
+
+  cursor:pointer;
+
+  font-size:15px;
+}
+
+.btn.gold{
+  background:var(--gold);
+  color:#081426;
+  font-weight:900;
+}
+
+/* =========================
+   SEÇÕES
+========================= */
+
+.section{
+  width:100%;
+  max-width:1200px;
+
+  margin:auto;
+
+  padding:34px 5%;
+}
+
+.section > h2{
+  margin-top:0;
+}
+
+.grid{
+  display:grid;
+
+  grid-template-columns:
+    repeat(auto-fit,minmax(220px,1fr));
+
+  gap:14px;
+}
+
+.card{
+  min-width:0;
+
+  background:var(--p);
+
+  border:1px solid var(--line);
+
+  border-radius:16px;
+
+  padding:17px;
+}
+
+.card h2,
+.card h3{
+  overflow-wrap:anywhere;
+}
+
+.weather strong{
+  font-size:40px;
+  color:var(--gold);
+}
+
+.versebox blockquote{
+  margin:8px 0;
+
+  font-size:17px;
+
+  line-height:1.5;
+
+  border-left:3px solid var(--gold);
+
+  padding-left:12px;
+}
+
+.versebox b{
+  color:var(--gold);
+}
+
+/* =========================
+   REELS
+========================= */
+
+.reels{
+  display:grid;
+
+  grid-auto-flow:column;
+
+  grid-auto-columns:minmax(240px,300px);
+
+  overflow-x:auto;
+
+  gap:14px;
+
+  padding:4px 0 12px;
+
+  scroll-snap-type:x mandatory;
+
+  scrollbar-width:thin;
+}
+
+.reel{
+  height:470px;
+
+  background:#02060c;
+
+  border:1px solid var(--line);
+
+  border-radius:20px;
+
+  overflow:hidden;
+
+  scroll-snap-align:start;
+
+  position:relative;
+}
+
+.reel video{
+  width:100%;
+  height:100%;
+
+  object-fit:cover;
+}
+
+.reel span{
+  position:absolute;
+
+  bottom:15px;
+  left:15px;
+  right:15px;
+
+  text-shadow:0 2px 10px #000;
+
+  font-weight:800;
+}
+
+/* =========================
+   FORMULÁRIOS
+========================= */
+
+.form{
+  display:grid;
+  gap:10px;
+}
+
+.form input,
+.form textarea{
+  width:100%;
+  max-width:100%;
+
+  padding:12px;
+
+  border-radius:11px;
+
+  border:1px solid var(--line);
+
+  background:#07192d;
+
+  color:#fff;
+
+  font-size:16px;
+}
+
+.form textarea{
+  min-height:90px;
+  resize:vertical;
+}
+
+/* =========================
+   TICKER
+========================= */
+
+.ticker{
+  position:fixed;
+
+  bottom:0;
+  left:0;
+  right:0;
+
+  width:100%;
+
+  background:#061426;
+
+  border-top:1px solid var(--line);
+
+  height:42px;
+
+  display:flex;
+  align-items:center;
+
+  overflow:hidden;
+
+  z-index:50;
+}
+
+.ticker b{
+  height:100%;
+
+  flex:none;
+
+  display:flex;
+  align-items:center;
+
+  background:var(--gold);
+
+  color:#061426;
+
+  padding:0 12px;
+
+  font-size:13px;
+
+  z-index:2;
+}
+
+.ticker div{
+  white-space:nowrap;
+
+  font-size:14px;
+
+  padding-left:20px;
+
+  animation:t 22s linear infinite;
+}
+
+@keyframes t{
+
+  from{
+    transform:translateX(100%);
+  }
+
+  to{
+    transform:translateX(-100%);
+  }
+
+}
+
+/* ==================================================
+   CELULAR
+================================================== */
+
+@media(max-width:700px){
+
+  body{
+    padding-bottom:38px;
+  }
+
+  header{
+    min-height:54px;
+    padding:9px 14px;
+    justify-content:center;
+  }
+
+  .brand{
+    width:100%;
+
+    text-align:center;
+
+    font-size:16px;
+
+    line-height:1.2;
+  }
+
+  nav{
+    display:none;
+  }
+
+  /* PLAYER PRINCIPAL MENOR */
+
+  .hero{
+    min-height:auto;
+
+    padding:
+      30px
+      15px
+      26px;
+  }
+
+  .hero h1{
+    font-size:29px;
+    line-height:1.08;
+
+    margin:7px 0;
+  }
+
+  .hero p{
+    font-size:14px;
+  }
+
+  .play{
+    width:68px;
+    height:68px;
+
+    font-size:25px;
+
+    margin-top:8px;
+  }
+
+  #playerStatus{
+    min-height:18px;
+
+    margin:10px 0 0;
+
+    font-size:13px;
+  }
+
+  /* BOTÕES */
+
+  .buttons{
+    width:100%;
+
+    display:grid;
+
+    grid-template-columns:
+      repeat(2,minmax(0,1fr));
+
+    gap:8px;
+
+    margin-top:17px;
+  }
+
+  .buttons .btn{
+    width:100%;
+
+    min-height:43px;
+
+    padding:10px 7px;
+
+    font-size:13px;
+  }
+
+  /* SEÇÕES */
+
+  .section{
+    width:100%;
+
+    padding:23px 13px;
+  }
+
+  .section > h2{
+    font-size:22px;
+
+    margin-bottom:10px;
+  }
+
+  .section > p{
+    font-size:14px;
+  }
+
+  /* CARDS UM POR LINHA */
+
+  .grid{
+    width:100%;
+
+    grid-template-columns:
+      minmax(0,1fr);
+
+    gap:10px;
+  }
+
+  .card{
+    width:100%;
+
+    padding:14px;
+
+    border-radius:14px;
+  }
+
+  .card h2{
+    font-size:20px;
+
+    margin:
+      7px
+      0;
+  }
+
+  .card h3{
+    font-size:18px;
+  }
+
+  .card p{
+    font-size:14px;
+
+    line-height:1.45;
+  }
+
+  .card small{
+    font-size:11px;
+  }
+
+  .weather strong{
+    font-size:34px;
+  }
+
+  .versebox blockquote{
+    font-size:15px;
+  }
+
+  /* REELS MAIS PEQUENOS */
+
+  .reels{
+    grid-auto-columns:76vw;
+
+    gap:10px;
+  }
+
+  .reel{
+    height:58vh;
+    min-height:360px;
+    max-height:500px;
+
+    border-radius:17px;
+  }
+
+  /* FORMULÁRIOS */
+
+  .form input,
+  .form textarea{
+    font-size:16px;
+
+    padding:11px;
+  }
+
+  .form .btn{
+    width:100%;
+  }
+
+  /* TICKER MENOR */
+
+  .ticker{
+    height:38px;
+  }
+
+  .ticker b{
+    padding:0 9px;
+
+    font-size:11px;
+  }
+
+  .ticker div{
+    font-size:12px;
+  }
+
+}
+
+/* ==================================================
+   CELULAR PEQUENO
+================================================== */
+
+@media(max-width:380px){
+
+  header{
+    padding:8px 10px;
+  }
+
+  .brand{
+    font-size:14px;
+  }
+
+  .hero{
+    padding:
+      25px
+      11px
+      22px;
+  }
+
+  .hero h1{
+    font-size:25px;
+  }
+
+  .play{
+    width:62px;
+    height:62px;
+
+    font-size:23px;
+  }
+
+  .section{
+    padding:
+      20px
+      10px;
+  }
+
+  .card{
+    padding:12px;
+  }
+
+  .buttons{
+    gap:6px;
+  }
+
+  .buttons .btn{
+    font-size:12px;
+
+    padding:
+      9px
+      5px;
+  }
+
+  .reels{
+    grid-auto-columns:82vw;
+  }
+
+  .reel{
+    height:55vh;
+  }
+
+}
+
+</style>
 </head>
 
 <body>
 
-  <!-- =====================================================
-       TOPO
-  ====================================================== -->
 
-  <header class="topbar">
+<header>
 
-    <div class="brand">
+  <div class="brand">
+    Web Rádio Vem Comigo Deus
+  </div>
 
-      <img
-        src="logo-play.png"
-        alt="Vem Comigo PLAY"
-      >
+  <nav>
 
-      <div>
+    <a href="#ouvir">
+      Ouvir
+    </a>
 
-        <strong>
-          Vem Comigo PLAY
-        </strong>
+    <a href="#programacao">
+      Programação
+    </a>
 
-        <span>
-          Vem Comigo Records
-        </span>
+    <a href="biblia.html">
+      Bíblia
+    </a>
 
-      </div>
+    <a href="#reels">
+      Reels
+    </a>
 
-    </div>
-
-
-    <div class="top-actions">
-
-      <button
-        id="libraryToggle"
-        class="iconbtn"
-        aria-label="Minha Biblioteca"
-        title="Minha Biblioteca"
-      >
-        ♡
-      </button>
-
-      <button
-        id="searchToggle"
-        class="iconbtn"
-        aria-label="Buscar"
-        title="Buscar"
-      >
-        ⌕
-      </button>
-
-    </div>
-
-  </header>
-
-
-  <!-- =====================================================
-       BUSCA
-  ====================================================== -->
-
-  <section
-    id="searchBox"
-    class="searchbox hidden"
-  >
-
-    <input
-      id="searchInput"
-      type="search"
-      placeholder="Buscar música, artista ou álbum"
-    >
-
-  </section>
-
-
-  <!-- =====================================================
-       CATEGORIAS
-  ====================================================== -->
-
-  <nav
-    class="chips"
-    aria-label="Categorias"
-  >
-
-    <button
-      class="active"
-      data-cat="Todos"
-    >
-      Tudo
-    </button>
-
-    <button data-cat="Adoração">
-      Adoração
-    </button>
-
-    <button data-cat="Sertanejo Gospel">
-      Sertanejo
-    </button>
-
-    <button data-cat="Forró Gospel">
-      Forró
-    </button>
-
-    <button data-cat="Arrocha Gospel">
-      Arrocha
-    </button>
-
-    <button data-cat="Seresta Gospel">
-      Seresta
-    </button>
-
-    <button data-cat="Pop Worship">
-      Pop Worship
-    </button>
-
-    <button data-cat="Christian Pop">
-      Christian Pop
-    </button>
-
-    <button data-cat="Acoustic Worship">
-      Acoustic Worship
-    </button>
-
-    <button data-cat="Bachata Gospel">
-      Bachata Gospel
-    </button>
-
-    <button data-cat="Gospel Vaqueiro">
-      Gospel Vaqueiro
-    </button>
-
-    <button data-cat="Podcasts">
-      Podcasts
-    </button>
+    <a href="#pedidos">
+      Pedidos
+    </a>
 
   </nav>
 
+</header>
 
-  <main>
 
-    <!-- =====================================================
-         HOME
-    ====================================================== -->
+<!-- PLAYER -->
 
-    <section
-      id="homeHero"
-      class="hero"
-    >
+<section
+  class="hero"
+  id="ouvir"
+>
 
-      <small>
-        CATÁLOGO OFICIAL
-      </small>
-
-      <h1>
-        Vem Comigo
-        <br>
-        <em>PLAY</em>
-      </h1>
-
-      <p>
-        Músicas, artistas e podcasts
-        da Vem Comigo Records.
-      </p>
-
-
-      <div class="hero-actions">
-
-        <button id="heroPlay">
-          ▶ Ouvir agora
-        </button>
-
-        <button
-          id="heroShuffle"
-          class="secondary"
-        >
-          ⇄ Aleatório
-        </button>
-
-      </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         MINHA BIBLIOTECA
-    ====================================================== -->
-
-    <section
-      id="librarySection"
-      class="section hidden"
-    >
-
-      <div class="library-header">
-
-        <button
-          id="closeLibrary"
-          class="album-back"
-        >
-          ← Voltar
-        </button>
-
-        <small>
-          MINHA BIBLIOTECA
-        </small>
-
-        <h1>
-          Sua música
-        </h1>
-
-        <p>
-          Favoritos e playlists salvos neste aparelho.
-        </p>
-
-      </div>
-
-
-      <div class="library-tabs">
-
-        <button
-          id="favoritesTab"
-          class="library-tab active"
-        >
-          ❤️ Favoritos
-        </button>
-
-        <button
-          id="playlistsTab"
-          class="library-tab"
-        >
-          ♪ Playlists
-        </button>
-
-      </div>
-
-
-      <!-- FAVORITOS -->
-
-      <div
-        id="favoritesView"
-        class="library-view"
-      >
-
-        <div class="section-head">
-
-          <div>
-
-            <small>
-              FAVORITOS
-            </small>
-
-            <h2>
-              Músicas que você curtiu
-            </h2>
-
-          </div>
-
-          <button id="playFavorites">
-            ▶ Tocar
-          </button>
-
-        </div>
-
-
-        <div
-          id="favoritesList"
-          class="tracklist"
-        >
-
-          <div class="empty">
-            Você ainda não adicionou favoritos.
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <!-- PLAYLISTS -->
-
-      <div
-        id="playlistsView"
-        class="library-view hidden"
-      >
-
-        <div class="section-head">
-
-          <div>
-
-            <small>
-              PLAYLISTS
-            </small>
-
-            <h2>
-              Suas playlists
-            </h2>
-
-          </div>
-
-          <button id="createPlaylistButton">
-            + Nova
-          </button>
-
-        </div>
-
-
-        <div
-          id="playlistsGrid"
-          class="albums-grid"
-        >
-
-          <div class="empty">
-            Nenhuma playlist criada.
-          </div>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         TELA DE PLAYLIST
-    ====================================================== -->
-
-    <section
-      id="playlistView"
-      class="album-view hidden"
-    >
-
-      <button
-        id="backPlaylist"
-        class="album-back"
-      >
-        ← Minhas playlists
-      </button>
-
-
-      <div class="album-header">
-
-        <div class="playlist-big-icon">
-          ♪
-        </div>
-
-
-        <div class="album-hero-info">
-
-          <small>
-            PLAYLIST
-          </small>
-
-          <h2 id="playlistViewTitle">
-            Minha Playlist
-          </h2>
-
-          <p id="playlistViewMeta">
-            0 músicas
-          </p>
-
-
-          <div class="album-actions">
-
-            <button
-              id="playlistPlay"
-              class="album-main-button"
-            >
-              ▶ Tocar playlist
-            </button>
-
-            <button
-              id="playlistShuffle"
-              class="album-secondary-button"
-            >
-              ⇄ Aleatório
-            </button>
-
-            <button
-              id="deletePlaylist"
-              class="album-secondary-button"
-            >
-              🗑 Excluir playlist
-            </button>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <div class="album-track-area">
-
-        <div
-          id="playlistTracks"
-          class="tracklist"
-        ></div>
-
-      </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         ARTISTAS
-    ====================================================== -->
-
-    <section
-      id="artistsSection"
-      class="section"
-    >
-
-      <div class="section-head">
-
-        <div>
-
-          <small>
-            ARTISTAS
-          </small>
-
-          <h2>
-            Artistas
-          </h2>
-
-        </div>
-
-      </div>
-
-
-      <div
-        id="artistsGrid"
-        class="albums-grid"
-      ></div>
-
-    </section>
-
-
-    <!-- =====================================================
-         ÁLBUNS
-    ====================================================== -->
-
-    <section
-      id="albumsSection"
-      class="section"
-    >
-
-      <div class="section-head">
-
-        <div>
-
-          <small>
-            ÁLBUNS
-          </small>
-
-          <h2>
-            Álbuns
-          </h2>
-
-        </div>
-
-      </div>
-
-
-      <div
-        id="albumsGrid"
-        class="albums-grid"
-      ></div>
-
-    </section>
-
-
-    <!-- =====================================================
-         TELA DO ÁLBUM
-    ====================================================== -->
-
-    <section
-      id="albumView"
-      class="album-view hidden"
-    >
-
-      <button
-        id="backAlbum"
-        class="album-back"
-      >
-        ← Voltar
-      </button>
-
-
-      <div class="album-header">
-
-        <div class="album-hero-cover">
-
-          <img
-            id="albumViewCover"
-            src="logo-play.png"
-            alt="Capa do álbum"
-          >
-
-        </div>
-
-
-        <div class="album-hero-info">
-
-          <small>
-            ÁLBUM
-          </small>
-
-          <h2 id="albumViewTitle">
-            Álbum
-          </h2>
-
-          <h3 id="albumViewArtist">
-            Artista
-          </h3>
-
-          <p id="albumViewMeta">
-            Categoria • 0 faixas
-          </p>
-
-
-          <div class="album-actions">
-
-            <button
-              id="albumPlay"
-              class="album-main-button"
-            >
-              ▶ Tocar álbum
-            </button>
-
-            <button
-              id="albumShuffle"
-              class="album-secondary-button"
-            >
-              ⇄ Aleatório
-            </button>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <div class="album-track-area">
-
-        <div class="section-head">
-
-          <div>
-
-            <small>
-              FAIXAS
-            </small>
-
-            <h2>
-              Músicas do álbum
-            </h2>
-
-          </div>
-
-        </div>
-
-
-        <div
-          id="albumTracks"
-          class="tracklist"
-        ></div>
-
-      </div>
-
-    </section>
-
-    <!-- =====================================================
-         TELA DA MÚSICA
-    ====================================================== -->
-
-    <section
-      id="trackView"
-      class="track-view hidden"
-    >
-
-      <button
-        id="backTrack"
-        class="album-back"
-      >
-        ← Voltar
-      </button>
-
-      <div class="track-view-card">
-
-        <div class="track-view-cover">
-          <img
-            id="trackViewCover"
-            src="logo-play.png"
-            alt="Capa da música"
-          >
-        </div>
-
-        <div class="track-view-info">
-          <small>TOCANDO AGORA</small>
-          <h2 id="trackViewTitle">Música</h2>
-          <h3 id="trackViewArtist">Artista</h3>
-          <p id="trackViewAlbum">Álbum</p>
-
-          <div class="track-view-actions">
-            <button id="trackViewPlay" class="album-main-button">▶ Tocar música</button>
-            <button id="trackViewFavorite" class="album-secondary-button">♡ Favoritar</button>
-            <button id="trackViewPlaylist" class="album-secondary-button">＋ Playlist</button>
-            <a id="trackViewDownload" class="album-secondary-button track-view-download" href="#" download>⇩ Baixar</a>
-          </div>
-        </div>
-
-      </div>
-
-    </section>
-
-
-
-
-    <!-- =====================================================
-         DESTAQUES
-    ====================================================== -->
-
-    <section
-      id="featuredSection"
-      class="section"
-    >
-
-      <div class="section-head">
-
-        <div>
-
-          <small>
-            DESTAQUES
-          </small>
-
-          <h2>
-            Louvores em destaque
-          </h2>
-
-        </div>
-
-        <button id="playAll">
-          Tocar tudo
-        </button>
-
-      </div>
-
-
-      <div
-        id="catalog"
-        class="tracklist"
-      ></div>
-
-    </section>
-
-  </main>
-
-
-  <!-- =====================================================
-       MODAL ADICIONAR À PLAYLIST
-  ====================================================== -->
+<div>
 
   <div
-    id="playlistModal"
-    class="playlist-modal hidden"
+    style="
+      color:#f4c64c;
+      font-weight:900;
+      font-size:14px
+    "
   >
+    ● AO VIVO • 80 kbps
+  </div>
 
-    <div class="playlist-modal-box">
+  <h1>
+    Vem Comigo Deus
+  </h1>
 
-      <div class="playlist-modal-head">
+  <p>
+    Mais que uma rádio, uma missão.
+  </p>
 
-        <div>
+  <button
+    id="playBtn"
+    class="play"
+    aria-label="Ouvir"
+  >
+    ▶
+  </button>
 
-          <small>
-            VEM COMIGO PLAY
-          </small>
-
-          <h2>
-            Adicionar à playlist
-          </h2>
-
-        </div>
-
-
-        <button
-          id="closePlaylistModal"
-          class="modal-close"
-        >
-          ✕
-        </button>
-
-      </div>
+  <audio
+    id="audio"
+    preload="none"
+  ></audio>
 
 
-      <div
-        id="playlistModalTrack"
-        class="playlist-modal-track"
-      >
-        Escolha uma música.
-      </div>
+  <div class="buttons">
 
+    <a
+      class="btn gold"
+      href="#pedidos"
+    >
+      🎵 Pedir Música
+    </a>
 
-      <div
-        id="playlistChoices"
-        class="playlist-choices"
-      ></div>
+    <a
+      class="btn"
+      href="#pedidos"
+    >
+      🙏 Pedido de Oração
+    </a>
 
+    <a
+      class="btn"
+      href="biblia.html"
+    >
+      📖 Bíblia
+    </a>
 
-      <button
-        id="newPlaylistFromModal"
-        class="primary-action"
-      >
-        + Criar nova playlist
-      </button>
-
-    </div>
+    <a
+      class="btn"
+      href="#programacao"
+    >
+      📻 Programação
+    </a>
 
   </div>
 
 
-  <!-- =====================================================
-       PLAYER FIXO
-  ====================================================== -->
+  <p
+    id="playerStatus"
+    style="color:#a9bad0"
+  ></p>
 
-  <footer
-    class="player"
-    id="player"
-  >
+</div>
 
-    <!-- CAPA -->
+</section>
 
-    <img
-      id="cover"
-      src="logo-play.png"
-      alt="Capa"
+
+<!-- INFORMAÇÕES -->
+
+<section class="section">
+
+<div class="grid">
+
+
+<div class="card weather">
+
+  <small>
+    TEMPO AGORA
+  </small>
+
+  <h2 id="wcity">
+    Carregando...
+  </h2>
+
+  <strong id="wtemp">
+    --°
+  </strong>
+
+  <p id="wdesc">
+    Aguardando previsão
+  </p>
+
+  <small id="wmeta"></small>
+
+</div>
+
+
+<div class="card">
+
+  <small>
+    AGORA NA RÁDIO
+  </small>
+
+  <h2>
+    Louvores que Edificam
+  </h2>
+
+  <p>
+    Ouça a programação da Web Rádio
+    Vem Comigo Deus.
+  </p>
+
+</div>
+
+
+<div class="card">
+
+  <small>
+    TOP 5 LOUVORES
+  </small>
+
+  <h2>
+    Mais tocados
+  </h2>
+
+  <p>
+    Somente louvores entram no ranking.
+    Vinhetas, chamadas, Hora Certa,
+    pregações e orações ficam fora.
+  </p>
+
+</div>
+
+
+<div class="card versebox">
+
+  <small>
+    CAIXINHA DE VERSÍCULOS
+  </small>
+
+  <h2>
+    Versículo do dia
+  </h2>
+
+  <blockquote id="vtext">
+    Carregando...
+  </blockquote>
+
+  <b id="vref"></b>
+
+  <div style="margin-top:12px">
+
+    <a
+      class="btn"
+      href="biblia.html"
     >
+      📖 Abrir Bíblia
+    </a>
+
+  </div>
+
+</div>
 
 
-    <!-- INFORMAÇÕES -->
+</div>
 
-    <div class="player-meta">
-
-      <small id="kind">
-        VEM COMIGO PLAY
-      </small>
-
-      <strong id="title">
-        Escolha uma faixa
-      </strong>
-
-      <span id="artist">
-        Player próprio do site
-      </span>
+</section>
 
 
-      <div class="progress">
+<!-- REELS -->
 
-        <span id="cur">
-          0:00
-        </span>
+<section
+  class="section"
+  id="reels"
+>
 
-        <input
-          id="seek"
-          type="range"
-          min="0"
-          max="100"
-          value="0"
-          aria-label="Progresso"
-        >
+<h2>
+  Reels da Rádio
+</h2>
 
-        <span id="dur">
-          0:00
-        </span>
+<p style="color:#a9bad0">
 
-      </div>
+  Vídeos verticais de louvores,
+  chamadas e mensagens.
 
-    </div>
+</p>
 
 
-    <!-- ANTERIOR -->
+<div
+  id="reelsBox"
+  class="reels"
+>
 
-    <button
-      id="prev"
-      class="round"
-      aria-label="Anterior"
-      title="Anterior"
-    >
-      ⏮
-    </button>
+<div
+  class="reel"
+  style="
+    display:grid;
+    place-items:center;
+    color:#a9bad0;
+    padding:20px;
+    text-align:center
+  "
+>
 
+  Publique Reels pelo painel
 
-    <!-- PLAY -->
+</div>
 
-    <button
-      id="play"
-      class="round main"
-      aria-label="Tocar"
-      title="Tocar"
-    >
-      ▶
-    </button>
+</div>
 
-
-    <!-- PRÓXIMA -->
-
-    <button
-      id="next"
-      class="round"
-      aria-label="Próxima"
-      title="Próxima"
-    >
-      ⏭
-    </button>
+</section>
 
 
-    <!-- =================================================
-         CONTROLES EXTRAS
-    ================================================== -->
+<!-- PROGRAMAÇÃO -->
 
-    <div class="player-extra-actions">
+<section
+  class="section"
+  id="programacao"
+>
 
-      <!-- REPETIR -->
-
-      <button
-        id="repeatButton"
-        class="player-extra-button"
-        title="Repetir"
-        aria-label="Repetir"
-      >
-        🔁
-      </button>
+<h2>
+  Programação
+</h2>
 
 
-      <!-- FAVORITO -->
-
-      <button
-        id="favoriteCurrent"
-        class="player-extra-button"
-        title="Adicionar aos favoritos"
-        aria-label="Favorito"
-      >
-        ♡
-      </button>
+<div class="grid">
 
 
-      <!-- PLAYLIST -->
+<div class="card">
 
-      <button
-        id="playlistCurrent"
-        class="player-extra-button"
-        title="Adicionar à playlist"
-        aria-label="Adicionar à playlist"
-      >
-        ＋
-      </button>
+  <b>
+    Tarde da Benção
+  </b>
 
+  <p>
+    Pastor Luiz Felipe •
+    Seg / Qua / Sex • 15h
+  </p>
 
-      <!-- DOWNLOAD -->
-
-      <a
-        id="downloadCurrent"
-        class="player-extra-button"
-        href="#"
-        download
-        title="Baixar música"
-        aria-label="Baixar música"
-      >
-        ⇩
-      </a>
-
-    </div>
+</div>
 
 
-    <!-- VOLUME -->
+<div class="card">
 
-    <div class="volume">
+  <b>
+    Deus Está Aqui
+  </b>
 
-      <span>
-        🔊
-      </span>
+  <p>
+    Pastor Bernardo Henrique •
+    Ter / Qui / Sáb • 16h
+  </p>
 
-      <input
-        id="volume"
-        type="range"
-        min="0"
-        max="1"
-        step=".05"
-        value=".85"
-        aria-label="Volume"
-      >
-
-    </div>
+</div>
 
 
-    <!-- ÁUDIO -->
+<div class="card">
 
-    <audio
-      id="audio"
-      preload="metadata"
-    ></audio>
+  <b>
+    Momento de Fé
+  </b>
 
-  </footer>
+  <p>
+    Missionária Ingrid Laura •
+    Ter / Qua / Qui • 17h
+  </p>
+
+</div>
 
 
-  <script src="app.js"></script>
+<div class="card">
+
+  <b>
+    Vem Comigo Jovem
+  </b>
+
+  <p>
+    Missionária Manuela Rodrigues •
+    Seg / Ter / Qui • 18h
+  </p>
+
+</div>
+
+
+</div>
+
+</section>
+
+
+<!-- PEDIDOS -->
+
+<section
+  class="section"
+  id="pedidos"
+>
+
+<h2>
+  Participe
+</h2>
+
+
+<div class="grid">
+
+
+<div class="card">
+
+<h3>
+  🎵 Pedido musical
+</h3>
+
+<div class="form">
+
+<input
+  id="musicName"
+  placeholder="Qual louvor?"
+>
+
+<input
+  id="musicListener"
+  placeholder="Seu nome"
+>
+
+<button
+  id="sendMusic"
+  class="btn gold"
+>
+  Enviar pedido
+</button>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h3>
+  🙏 Pedido de oração
+</h3>
+
+<div class="form">
+
+<input
+  id="prayerName"
+  placeholder="Seu nome ou Anônimo"
+>
+
+<textarea
+  id="prayerText"
+  placeholder="Escreva seu pedido de oração"
+></textarea>
+
+<button
+  id="sendPrayer"
+  class="btn gold"
+>
+  Enviar pedido
+</button>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h3>
+  WhatsApp
+</h3>
+
+<p>
+  Fale diretamente com a
+  Web Rádio Vem Comigo Deus.
+</p>
+
+<button
+  id="whatsBtn"
+  class="btn"
+>
+  Abrir WhatsApp
+</button>
+
+</div>
+
+
+</div>
+
+</section>
+
+
+<!-- TICKER -->
+
+<div class="ticker">
+
+<b>
+  AO VIVO
+</b>
+
+<div id="ticker">
+
+Web Rádio Vem Comigo Deus •
+80 kbps •
+Louvores •
+Palavra •
+Oração •
+Pedidos do ouvinte •
+Tempo Agora •
+Bíblia •
+Reels da Rádio
+
+</div>
+
+</div>
+
+
+<script>
+
+/* =========================
+   CONFIGURAÇÃO DO SITE
+========================= */
+
+let cfg = {
+
+  whatsappNumber:'',
+
+  streamUrl:'',
+
+  weatherCity:'Uruguaiana, RS',
+
+  bitrate:'80k'
+
+};
+
+
+/* CARREGA CONFIGURAÇÃO */
+
+fetch(
+  'site-config.json?' + Date.now()
+)
+
+.then(
+  r => r.json()
+)
+
+.then(
+  x => {
+
+    cfg = {
+      ...cfg,
+      ...x
+    };
+
+    setup();
+
+  }
+)
+
+.catch(
+  () => setup()
+);
+
+
+/* =========================
+   PLAYER
+========================= */
+
+function setup(){
+
+  const audio =
+    document.getElementById('audio');
+
+  const playBtn =
+    document.getElementById('playBtn');
+
+  const playerStatus =
+    document.getElementById('playerStatus');
+
+
+  if(cfg.streamUrl){
+
+    audio.src =
+      cfg.streamUrl;
+
+  }
+
+
+  playBtn.onclick =
+    async () => {
+
+
+      if(!cfg.streamUrl){
+
+        playerStatus.textContent =
+          'Configure a URL pública do áudio no painel.';
+
+        return;
+
+      }
+
+
+      if(audio.paused){
+
+        try{
+
+          await audio.play();
+
+          playBtn.textContent =
+            '❚❚';
+
+          playerStatus.textContent =
+            'Tocando ao vivo • ' +
+            (cfg.bitrate || '80k');
+
+        }
+
+        catch(error){
+
+          playerStatus.textContent =
+            'Não foi possível tocar o sinal.';
+
+        }
+
+      }
+
+      else{
+
+        audio.pause();
+
+        playBtn.textContent =
+          '▶';
+
+        playerStatus.textContent =
+          'Rádio pausada';
+
+      }
+
+    };
+
+
+  audio.addEventListener(
+    'playing',
+    () => {
+
+      playBtn.textContent =
+        '❚❚';
+
+    }
+  );
+
+
+  audio.addEventListener(
+    'pause',
+    () => {
+
+      playBtn.textContent =
+        '▶';
+
+    }
+  );
+
+
+  /* =========================
+     WHATSAPP
+  ========================= */
+
+  const openW =
+    msg => {
+
+
+      const n =
+        String(
+          cfg.whatsappNumber || ''
+        )
+        .replace(
+          /\D/g,
+          ''
+        );
+
+
+      if(!n){
+
+        navigator.clipboard
+          ?.writeText(msg);
+
+        alert(
+          'Número do WhatsApp ainda não foi configurado. ' +
+          'A mensagem foi preparada para você copiar.'
+        );
+
+        return;
+
+      }
+
+
+      location.href =
+        `https://wa.me/${n}?text=${
+          encodeURIComponent(msg)
+        }`;
+
+    };
+
+
+  document
+    .getElementById('sendMusic')
+    .onclick =
+      () => {
+
+
+        const m =
+          document
+            .getElementById('musicName')
+            .value
+            .trim();
+
+
+        if(!m)
+          return;
+
+
+        const listener =
+          document
+            .getElementById('musicListener')
+            .value
+            .trim()
+          || 'Ouvinte';
+
+
+        openW(
+`🎵 Pedido musical — Web Rádio Vem Comigo Deus
+Louvor: ${m}
+Ouvinte: ${listener}`
+        );
+
+      };
+
+
+  document
+    .getElementById('sendPrayer')
+    .onclick =
+      () => {
+
+
+        const t =
+          document
+            .getElementById('prayerText')
+            .value
+            .trim();
+
+
+        if(!t)
+          return;
+
+
+        const prayerName =
+          document
+            .getElementById('prayerName')
+            .value
+            .trim()
+          || 'Anônimo';
+
+
+        openW(
+`🙏 Pedido de oração — Web Rádio Vem Comigo Deus
+Nome: ${prayerName}
+Pedido: ${t}`
+        );
+
+      };
+
+
+  document
+    .getElementById('whatsBtn')
+    .onclick =
+      () => {
+
+        openW(
+          'Olá! Estou ouvindo a Web Rádio Vem Comigo Deus.'
+        );
+
+      };
+
+
+  weather();
+
+}
+
+
+/* =========================
+   PREVISÃO DO TEMPO
+========================= */
+
+async function weather(){
+
+  try{
+
+    const city =
+      cfg.weatherCity ||
+      'Uruguaiana, RS';
+
+
+    const g =
+      await fetch(
+
+        `https://geocoding-api.open-meteo.com/v1/search?name=${
+          encodeURIComponent(city)
+        }&count=1&language=pt&format=json`
+
+      )
+      .then(
+        r => r.json()
+      );
+
+
+    const p =
+      g.results?.[0];
+
+
+    if(!p)
+      return;
+
+
+    const w =
+      await fetch(
+
+        `https://api.open-meteo.com/v1/forecast?latitude=${
+          p.latitude
+        }&longitude=${
+          p.longitude
+        }&current=temperature_2m,weather_code,wind_speed_10m&hourly=precipitation_probability&timezone=auto&forecast_days=1`
+
+      )
+      .then(
+        r => r.json()
+      );
+
+
+    let desc =
+      'Tempo variável';
+
+
+    const code =
+      w.current.weather_code;
+
+
+    if(code === 0){
+
+      desc =
+        'Céu limpo';
+
+    }
+
+    else if(
+      code === 1 ||
+      code === 2
+    ){
+
+      desc =
+        'Parcialmente nublado';
+
+    }
+
+    else if(code === 3){
+
+      desc =
+        'Nublado';
+
+    }
+
+    else if(code >= 51){
+
+      desc =
+        'Chuva';
+
+    }
+
+
+    document
+      .getElementById('wcity')
+      .textContent =
+
+        p.name +
+
+        (
+          p.admin1
+          ? ', ' + p.admin1
+          : ''
+        );
+
+
+    document
+      .getElementById('wtemp')
+      .textContent =
+
+        Math.round(
+          w.current.temperature_2m
+        ) + '°C';
+
+
+    document
+      .getElementById('wdesc')
+      .textContent =
+        desc;
+
+
+    document
+      .getElementById('wmeta')
+      .textContent =
+
+        'Vento ' +
+
+        Math.round(
+          w.current.wind_speed_10m
+        ) +
+
+        ' km/h';
+
+  }
+
+  catch(error){
+
+    document
+      .getElementById('wdesc')
+      .textContent =
+        'Previsão indisponível';
+
+  }
+
+}
+
+
+/* =========================
+   REELS
+========================= */
+
+fetch(
+  'reels/reels.json'
+)
+
+.then(
+  r => r.json()
+)
+
+.then(
+  items => {
+
+
+    if(
+      !Array.isArray(items) ||
+      !items.length
+    ){
+
+      return;
+
+    }
+
+
+    document
+      .getElementById('reelsBox')
+      .innerHTML =
+
+        items
+        .map(
+          x => `
+
+<div class="reel">
+
+<video
+  src="${x.url}"
+  controls
+  playsinline
+  preload="metadata"
+></video>
+
+<span>
+  ${x.title || x.name || ''}
+</span>
+
+</div>
+
+`
+        )
+        .join('');
+
+  }
+)
+
+.catch(
+  () => {}
+);
+
+
+/* =========================
+   VERSÍCULO DO DIA
+========================= */
+
+const refs = [
+
+  [
+    'Ps',
+    23,
+    1,
+    'Salmos 23:1'
+  ],
+
+  [
+    'John',
+    3,
+    16,
+    'João 3:16'
+  ],
+
+  [
+    'Phil',
+    4,
+    13,
+    'Filipenses 4:13'
+  ],
+
+  [
+    'Isa',
+    41,
+    10,
+    'Isaías 41:10'
+  ],
+
+  [
+    'Rom',
+    8,
+    28,
+    'Romanos 8:28'
+  ]
+
+];
+
+
+(async()=>{
+
+  const x =
+    refs[
+      Math.floor(
+        Date.now() /
+        86400000
+      )
+      %
+      refs.length
+    ];
+
+
+  try{
+
+    const d =
+      await fetch(
+
+        `https://raw.githubusercontent.com/midvash/bible-data/main/versions/pt/almeida-livre/books/${x[0]}.json`
+
+      )
+      .then(
+        r => r.json()
+      );
+
+
+    const c =
+      d.chapters.find(
+        a =>
+          a.chapter === x[1]
+      );
+
+
+    const v =
+      c.verses.find(
+        a =>
+          Number(a.number) === x[2]
+      );
+
+
+    document
+      .getElementById('vtext')
+      .textContent =
+        '“' + v.text + '”';
+
+
+    document
+      .getElementById('vref')
+      .textContent =
+        x[3];
+
+  }
+
+  catch(error){
+
+    document
+      .getElementById('vtext')
+      .textContent =
+        'Abra a Bíblia para sua leitura de hoje.';
+
+  }
+
+})();
+
+</script>
 
 </body>
-
 </html>
