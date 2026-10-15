@@ -1,316 +1,3622 @@
-import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-const cfg=window.VCS_CONFIG; const sb=createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY);
-let me=null,myProfile=null,channel=null; const $=id=>document.getElementById(id); const esc=s=>(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); const dt=v=>new Date(v).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
+/* =========================================================
+   VEM COMIGO PLAY
+   SITE PÚBLICO
+   PLAYER + ÁLBUNS + CAPA DA MÚSICA
+   FAVORITOS + PLAYLISTS + REPEAT + DOWNLOAD
+========================================================= */
 
-window.go=async(id,btn)=>{document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));if(btn)btn.classList.add('active');if(id==='inicio')await loadFeed();if(id==='pessoas')await loadPeople();if(id==='oracoes')await loadPrayers();if(id==='reels')await loadReels();if(id==='testemunhos')await loadTestimonies();if(id==='palavra')await loadWords();if(id==='podcast')await loadPodcasts();if(id==='louvores')await loadSongs();if(id==='mensagens')await loadChatUsers();if(id==='notificacoes')await loadNotifications();if(id==='perfil')await loadProfile();scrollTo({top:0,behavior:'smooth'});};
-window.signup=async()=>{const name=$('authName').value.trim(),email=$('authEmail').value.trim(),password=$('authPass').value;if(!name||!email||password.length<6){$('authMsg').textContent='Preencha nome, e-mail e senha com pelo menos 6 caracteres.';return}const {data,error}=await sb.auth.signUp({email,password,options:{data:{display_name:name},emailRedirectTo:location.origin}});$('authMsg').textContent=error?error.message:(data.session?'Conta criada e conectada!':'Conta criada. Confirme o e-mail e depois entre.');};
-window.login=async()=>{const {error}=await sb.auth.signInWithPassword({email:$('authEmail').value.trim(),password:$('authPass').value});$('authMsg').textContent=error?error.message:'';}; window.logout=()=>sb.auth.signOut();
-async function ensureProfile(){let {data}=await sb.from('profiles').select('*').eq('id',me.id).maybeSingle();if(!data){const name=me.user_metadata?.display_name||me.email.split('@')[0]||'Membro';const r=await sb.from('profiles').insert({id:me.id,display_name:name}).select().single();data=r.data}myProfile=data;}
-async function upload(bucket,file){if(!file)return null;const ext=(file.name.split('.').pop()||'bin').toLowerCase();const path=`${me.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;const {error}=await sb.storage.from(bucket).upload(path,file,{upsert:false});if(error)throw error;return sb.storage.from(bucket).getPublicUrl(path).data.publicUrl;}
-async function start(session){me=session?.user||null;if(!me){$('auth').classList.remove('hidden');$('app').classList.add('hidden');return}await ensureProfile();$('auth').classList.add('hidden');$('app').classList.remove('hidden');$('topAvatar').src=myProfile?.avatar_url||'./icon-192.png';await Promise.all([loadFeed(),loadNotifCount()]);if(channel)sb.removeChannel(channel);channel=sb.channel('vcp-live').on('postgres_changes',{event:'*',schema:'public',table:'notifications',filter:`user_id=eq.${me.id}`},loadNotifCount).subscribe();}
+const SUPABASE_URL =
+  "https://rtlkifpsoviwxgwbbuet.supabase.co";
 
-window.createPost=async()=>{const content=$('postText').value.trim(),file=$('postImage').files[0];if(!content&&!file)return;try{const image_url=file?await upload('post-images',file):null;const {error}=await sb.from('posts').insert({user_id:me.id,content:content||'📷',image_url});if(error)throw error;$('postText').value='';$('postImage').value='';await loadFeed()}catch(e){$('postMsg').textContent=e.message}};
-async function loadFeed(){const {data:posts,error}=await sb.from('posts').select('id,user_id,content,image_url,created_at,profiles!posts_user_id_fkey(display_name,avatar_url)').order('created_at',{ascending:false}).limit(50);if(error){$('feed').innerHTML=`<div class="card">${esc(error.message)}</div>`;return}const ids=(posts||[]).map(p=>p.id);const {data:likes}=ids.length?await sb.from('likes').select('post_id,user_id').in('post_id',ids):{data:[]};const {data:comments}=ids.length?await sb.from('comments').select('id,post_id,user_id,content,created_at,profiles!comments_user_id_fkey(display_name)').in('post_id',ids).order('created_at'):{data:[]};$('feed').innerHTML=(posts||[]).map(p=>{const pl=(likes||[]).filter(x=>x.post_id===p.id),mine=pl.some(x=>x.user_id===me.id),pc=(comments||[]).filter(x=>x.post_id===p.id);return `<article class="post"><div class="posthead"><img class="ava" src="${p.profiles?.avatar_url||'./icon-192.png'}"><div><b style="color:var(--gold)">${esc(p.profiles?.display_name||'Membro')}</b><div class="muted">${dt(p.created_at)}</div></div></div>${p.image_url?`<img class="postimg" src="${esc(p.image_url)}">`:''}<div class="postbody">${esc(p.content).replace(/\n/g,'<br>')}</div><div class="actions"><button class="${mine?'on':''}" onclick="toggleLike(${p.id},${mine},'${p.user_id}')">❤️ ${pl.length}</button><button>💬 ${pc.length}</button></div><div class="commentbox">${pc.map(c=>`<div class="comment"><b>${esc(c.profiles?.display_name||'Membro')}:</b> ${esc(c.content)}</div>`).join('')}<div class="row"><input id="c-${p.id}" class="field grow" maxlength="500" placeholder="Comentar..."><button class="btn" onclick="addComment(${p.id},'${p.user_id}')">Enviar</button></div></div></article>`}).join('')||'<div class="empty">Ainda não há publicações.</div>';}
-window.toggleLike=async(id,on,owner)=>{if(on)await sb.from('likes').delete().eq('post_id',id).eq('user_id',me.id);else{const {error}=await sb.from('likes').insert({post_id:id,user_id:me.id});if(error)return alert(error.message);if(owner!==me.id)await notify(owner,'like',String(id),`${myProfile.display_name} curtiu sua publicação.`)}await loadFeed();};
-window.addComment=async(id,owner)=>{const input=$('c-'+id),content=input.value.trim();if(!content)return;const {error}=await sb.from('comments').insert({post_id:id,user_id:me.id,content});if(error)return alert(error.message);input.value='';if(owner!==me.id)await notify(owner,'comment',String(id),`${myProfile.display_name} comentou na sua publicação.`);await loadFeed();};
+const SUPABASE_ANON_KEY =
+  "sb_publishable_p95BIFIlAQ02aZYVdDKaNQ_mjtXSBYK";
 
-window.createPrayer=async()=>{const content=$('prayerText').value.trim();if(!content)return;const {error}=await sb.from('prayers').insert({user_id:me.id,content,is_testimony:false});if(error)return alert(error.message);$('prayerText').value='';await loadPrayers();};
-async function loadPrayers(){const {data:p,error}=await sb.from('prayers').select('id,user_id,content,created_at,profiles!prayers_user_id_fkey(display_name,avatar_url)').eq('is_testimony',false).order('created_at',{ascending:false});if(error){$('prayerList').innerHTML=`<div class="card">${esc(error.message)}</div>`;return}const ids=(p||[]).map(x=>x.id);const {data:s}=ids.length?await sb.from('prayer_support').select('prayer_id,user_id').in('prayer_id',ids):{data:[]};$('prayerList').innerHTML=(p||[]).map(x=>{const a=(s||[]).filter(y=>y.prayer_id===x.id),mine=a.some(y=>y.user_id===me.id);return `<div class="prayer"><b>${esc(x.profiles?.display_name||'Membro')}</b><div class="muted">${dt(x.created_at)}</div><p>${esc(x.content)}</p><button class="btn ${mine?'alt':''}" onclick="togglePrayer(${x.id},'${x.user_id}',${mine})">🤲 ${mine?'Orando':'Estou orando'} (${a.length})</button></div>`}).join('')||'<div class="empty">Nenhum pedido de oração ainda.</div>';}
-window.togglePrayer=async(id,owner,on)=>{if(on)await sb.from('prayer_support').delete().eq('prayer_id',id).eq('user_id',me.id);else{await sb.from('prayer_support').insert({prayer_id:id,user_id:me.id});if(owner!==me.id)await notify(owner,'prayer',String(id),`${myProfile.display_name} está orando por você.`)}await loadPrayers();};
+const $ = (selector) =>
+  document.querySelector(selector);
 
-window.createTestimony=async()=>{const content=$('testimonyText').value.trim(),file=$('testimonyImage').files[0];if(!content)return;try{$('testimonyMsg').textContent='Publicando...';const image_url=file?await upload('post-images',file):null;const {error}=await sb.from('testimonies').insert({user_id:me.id,content,image_url});if(error)throw error;$('testimonyText').value='';$('testimonyImage').value='';$('testimonyMsg').textContent='Testemunho publicado!';await loadTestimonies()}catch(e){$('testimonyMsg').textContent=e.message}};
-async function loadTestimonies(){const {data,error}=await sb.from('testimonies').select('id,user_id,content,image_url,created_at,profiles!testimonies_user_id_fkey(display_name,avatar_url)').order('created_at',{ascending:false});if(error){$('testimonyList').innerHTML=`<div class="card">${esc(error.message)}</div>`;return}$('testimonyList').innerHTML=(data||[]).map(x=>`<article class="testimony-card"><h4>✨ ${esc(x.profiles?.display_name||'Membro')}</h4><div class="muted">${dt(x.created_at)}</div>${x.image_url?`<img class="media-img" src="${esc(x.image_url)}">`:''}<p class="testimony-text">${esc(x.content)}</p></article>`).join('')||'<div class="empty">Nenhum testemunho publicado ainda.</div>';}
-
-window.createWord=async()=>{const title=$('wordTitle').value.trim(),ref=$('wordRef').value.trim(),content=$('wordText').value.trim();if(!title||!content)return;const {error}=await sb.from('devotionals').insert({user_id:me.id,title,bible_reference:ref,content});$('wordMsg').textContent=error?error.message:'Palavra publicada!';if(!error){$('wordTitle').value='';$('wordRef').value='';$('wordText').value='';await loadWords()}};
-async function loadWords(){const {data,error}=await sb.from('devotionals').select('id,title,bible_reference,content,created_at,profiles!devotionals_user_id_fkey(display_name)').order('created_at',{ascending:false});if(error){$('wordList').innerHTML=`<div class="card">${esc(error.message)}</div>`;return}$('wordList').innerHTML=(data||[]).map(x=>`<article class="word-card"><h4>📖 ${esc(x.title)}</h4><div class="word-ref">${esc(x.bible_reference||'')}</div><p class="word-text">${esc(x.content)}</p><div class="muted">${esc(x.profiles?.display_name||'Membro')} • ${dt(x.created_at)}</div></article>`).join('')||'<div class="empty">Nenhuma Palavra publicada ainda.</div>';}
-
-window.createPodcast=async()=>{const title=$('podTitle').value.trim(),guest=$('podGuest').value.trim(),description=$('podDesc').value.trim(),file=$('podFile').files[0];if(!title||!file){$('podMsg').textContent='Informe o título e escolha um áudio MP3.';return}try{$('podMsg').textContent='Enviando áudio...';const audio_url=await upload('media-audio',file);const {error}=await sb.from('podcast_episodes').insert({user_id:me.id,title,guest,description,audio_url});if(error)throw error;$('podTitle').value='';$('podGuest').value='';$('podDesc').value='';$('podFile').value='';$('podMsg').textContent='Episódio publicado!';await loadPodcasts()}catch(e){$('podMsg').textContent=e.message}};
-async function loadPodcasts(){const {data,error}=await sb.from('podcast_episodes').select('id,title,guest,description,audio_url,created_at,profiles!podcast_episodes_user_id_fkey(display_name)').order('created_at',{ascending:false});if(error){$('podcastList').innerHTML=`<div class="card">${esc(error.message)}</div>`;return}let rows=data||[];if(!rows.length){rows=[{title:'Podcast Vem Comigo Records — Episódio 01',guest:'Léo Lima & Fernandes',description:'Música, fé e propósito.',audio_url:'./assets/podcast-episodio-01.mp3',created_at:new Date().toISOString(),profiles:{display_name:'Vem Comigo Records'}}]}$('podcastList').innerHTML=rows.map(x=>`<article class="media-card"><h4>🎙️ ${esc(x.title)}</h4><div class="media-meta">${esc(x.guest||'')} • ${esc(x.profiles?.display_name||'')}</div><p>${esc(x.description||'')}</p><audio controls preload="none" src="${esc(x.audio_url)}"></audio></article>`).join('');}
-
-window.createSong=async()=>{const title=$('songTitle').value.trim(),artist=$('songArtist').value.trim(),file=$('songFile').files[0];if(!title||!file){$('songMsg').textContent='Informe o nome do louvor e escolha um MP3.';return}try{$('songMsg').textContent='Enviando louvor...';const audio_url=await upload('media-audio',file);const {error}=await sb.from('songs').insert({user_id:me.id,title,artist,audio_url});if(error)throw error;$('songTitle').value='';$('songArtist').value='';$('songFile').value='';$('songMsg').textContent='Louvor publicado!';await loadSongs()}catch(e){$('songMsg').textContent=e.message}};
-async function loadSongs(){const {data,error}=await sb.from('songs').select('id,title,artist,audio_url,created_at,profiles!songs_user_id_fkey(display_name)').order('created_at',{ascending:false});if(error){$('songList').innerHTML=`<div class="card">${esc(error.message)}</div>`;return}$('songList').innerHTML=(data||[]).map(x=>`<article class="media-card"><h4>🎵 ${esc(x.title)}</h4><div class="media-meta">${esc(x.artist||'Vem Comigo Records')}</div><audio controls preload="none" src="${esc(x.audio_url)}"></audio></article>`).join('')||'<div class="empty">Nenhum louvor publicado ainda. Use o formulário acima para enviar o primeiro MP3.</div>';}
-
-window.loadPeople=async()=>{const q=($('peopleSearch')?.value||'').toLowerCase();const {data:people}=await sb.from('profiles').select('id,display_name,bio,avatar_url').neq('id',me.id).order('display_name');const {data:follows}=await sb.from('follows').select('following_id').eq('follower_id',me.id);const set=new Set((follows||[]).map(x=>x.following_id));$('peopleList').innerHTML=(people||[]).filter(p=>!q||(p.display_name||'').toLowerCase().includes(q)).map(p=>`<div class="person"><img class="ava" src="${p.avatar_url||'./icon-192.png'}"><div class="grow"><b>${esc(p.display_name)}</b><div class="muted">${esc(p.bio||'')}</div></div><button class="btn ${set.has(p.id)?'alt':''}" onclick="toggleFollow('${p.id}',${set.has(p.id)})">${set.has(p.id)?'Seguindo':'Seguir'}</button></div>`).join('');};
-window.toggleFollow=async(id,on)=>{if(on)await sb.from('follows').delete().eq('follower_id',me.id).eq('following_id',id);else{const {error}=await sb.from('follows').insert({follower_id:me.id,following_id:id});if(error)return alert(error.message);await notify(id,'follow',me.id,`${myProfile.display_name} começou a seguir você.`)}await loadPeople();};
-async function loadChatUsers(){const {data}=await sb.from('profiles').select('id,display_name').neq('id',me.id).order('display_name');$('chatUser').innerHTML='<option value="">Escolha uma pessoa</option>'+ (data||[]).map(p=>`<option value="${p.id}">${esc(p.display_name)}</option>`).join('');}
-window.loadChat=async()=>{const other=$('chatUser').value;if(!other){$('chat').innerHTML='';return}const {data}=await sb.from('messages').select('*').or(`and(sender_id.eq.${me.id},receiver_id.eq.${other}),and(sender_id.eq.${other},receiver_id.eq.${me.id})`).order('created_at');$('chat').innerHTML=(data||[]).map(m=>`<div class="bubble ${m.sender_id===me.id?'mine':''}">${esc(m.content)}<div class="muted">${dt(m.created_at)}</div></div>`).join('');await sb.from('messages').update({read_at:new Date().toISOString()}).eq('sender_id',other).eq('receiver_id',me.id).is('read_at',null);};
-window.sendMessage=async()=>{const other=$('chatUser').value,content=$('chatText').value.trim();if(!other||!content)return;const {error}=await sb.from('messages').insert({sender_id:me.id,receiver_id:other,content});if(error)return alert(error.message);$('chatText').value='';await notify(other,'message',me.id,`${myProfile.display_name} enviou uma mensagem.`);await loadChat();};
-async function notify(user_id,type,entity_id,text){await sb.from('notifications').insert({user_id,actor_id:me.id,type,entity_id,text});}
-async function loadNotifCount(){const {count}=await sb.from('notifications').select('*',{count:'exact',head:true}).eq('user_id',me.id).is('read_at',null);$('notifCount').textContent=count||0;$('notifCount').classList.toggle('hidden',!(count>0));}
-async function loadNotifications(){const {data}=await sb.from('notifications').select('*').eq('user_id',me.id).order('created_at',{ascending:false});$('notifList').innerHTML=(data||[]).map(n=>`<div class="notif">${esc(n.text)}<div class="muted">${dt(n.created_at)}</div></div>`).join('')||'<div class="empty">Nenhuma notificação.</div>';}
-window.markAllRead=async()=>{await sb.from('notifications').update({read_at:new Date().toISOString()}).eq('user_id',me.id).is('read_at',null);await Promise.all([loadNotifications(),loadNotifCount()]);};
-async function loadProfile(){await ensureProfile();$('profileAvatar').src=myProfile.avatar_url||'./icon-192.png';$('profileName').textContent=myProfile.display_name;$('pName').value=myProfile.display_name||'';$('pBio').value=myProfile.bio||'';$('pVerse').value=myProfile.verse||'';const [{count:a},{count:b},{count:c}]=await Promise.all([sb.from('follows').select('*',{count:'exact',head:true}).eq('following_id',me.id),sb.from('follows').select('*',{count:'exact',head:true}).eq('follower_id',me.id),sb.from('posts').select('*',{count:'exact',head:true}).eq('user_id',me.id)]);$('profileCounts').textContent=`${c||0} posts · ${a||0} seguidores · ${b||0} seguindo`;}
-window.saveProfile=async()=>{try{const file=$('pAvatarFile').files[0];let avatar_url=myProfile.avatar_url;if(file)avatar_url=await upload('avatars',file);const {error}=await sb.from('profiles').update({display_name:$('pName').value.trim()||'Membro',bio:$('pBio').value.trim(),verse:$('pVerse').value.trim(),avatar_url}).eq('id',me.id);if(error)throw error;$('profileMsg').textContent='Perfil salvo!';await ensureProfile();$('topAvatar').src=myProfile.avatar_url||'./icon-192.png';await loadProfile()}catch(e){$('profileMsg').textContent=e.message}};
+const audio =
+  $("#audio");
 
 
-let soundPreview=null;
+/* =========================================================
+   ESTADO PRINCIPAL
+========================================================= */
 
-window.openSoundPicker=async()=>{
-  $('soundPicker').classList.remove('hidden');
-  await loadReelSounds();
-};
+let tracks = [];
 
-window.closeSoundPicker=()=>{
-  $('soundPicker').classList.add('hidden');
-  if(soundPreview){
-    try{soundPreview.pause()}catch{}
-    soundPreview=null;
+let filteredTracks = [];
+
+let queue = [];
+
+let currentIndex = 0;
+
+let currentTrack = null;
+
+let currentAlbumTracks = [];
+
+let currentAlbum = null;
+
+let currentDetailTrack = null;
+
+let detailPreviousView =
+  "home";
+
+
+/* =========================================================
+   BIBLIOTECA LOCAL
+========================================================= */
+
+const FAVORITES_KEY =
+  "vcplay-favorites";
+
+const PLAYLISTS_KEY =
+  "vcplay-playlists";
+
+const REPEAT_KEY =
+  "vcplay-repeat-mode";
+
+
+let favorites =
+  loadJson(
+    FAVORITES_KEY,
+    []
+  );
+
+
+let playlists =
+  loadJson(
+    PLAYLISTS_KEY,
+    []
+  );
+
+
+let repeatMode =
+  localStorage.getItem(
+    REPEAT_KEY
+  ) || "off";
+
+
+let playlistModalTrack =
+  null;
+
+
+let currentPlaylist =
+  null;
+
+
+/* =========================================================
+   JSON LOCAL
+========================================================= */
+
+function loadJson(
+  key,
+  fallback
+) {
+
+  try {
+
+    const saved =
+      localStorage.getItem(
+        key
+      );
+
+    if (!saved) {
+      return fallback;
+    }
+
+    return JSON.parse(
+      saved
+    );
+
+  } catch {
+
+    return fallback;
+
   }
-};
 
-async function loadReelSounds(){
-  const box=$('soundList');
-  box.innerHTML='<div class="empty">Carregando sons...</div>';
-
-  const {data,error}=await sb
-    .from('reel_sounds')
-    .select('id,title,artist,duration_seconds,audio_url,active')
-    .eq('active',true)
-    .order('id');
-
-  if(error){
-    box.innerHTML=`<div class="empty">${esc(error.message)}</div>`;
-    return;
-  }
-
-  box.innerHTML=(data||[]).map(s=>`
-    <div class="sound-item" id="sound-${s.id}">
-      <button type="button" class="sound-play" onclick="previewSound(event,'${esc(s.audio_url)}',${s.id})">▶</button>
-      <div class="sound-info" onclick="selectSound('${esc(s.audio_url)}','${esc(s.title)}',${s.id})">
-        <strong>${esc(s.title)}</strong>
-        <small>${esc(s.artist||'Sons Vem+')} • ${s.duration_seconds||30}s</small>
-      </div>
-      <button type="button" class="sound-use" onclick="selectSound('${esc(s.audio_url)}','${esc(s.title)}',${s.id})">Usar</button>
-    </div>
-  `).join('') || '<div class="empty">Nenhum Som Vem+ encontrado.</div>';
 }
 
-window.previewSound=(event,url,id)=>{
-  event.stopPropagation();
 
-  if(soundPreview){
-    try{soundPreview.pause()}catch{}
-    soundPreview=null;
+function saveFavorites() {
+
+  localStorage.setItem(
+    FAVORITES_KEY,
+    JSON.stringify(
+      favorites
+    )
+  );
+
+}
+
+
+function savePlaylists() {
+
+  localStorage.setItem(
+    PLAYLISTS_KEY,
+    JSON.stringify(
+      playlists
+    )
+  );
+
+}
+
+
+/* =========================================================
+   UTILIDADES
+========================================================= */
+
+function formatTime(
+  seconds
+) {
+
+  if (
+    !Number.isFinite(
+      seconds
+    )
+  ) {
+
+    return "0:00";
+
   }
 
-  const btn=event.currentTarget;
 
-  const a=new Audio(url);
-  soundPreview=a;
-  btn.textContent='❚❚';
+  const minutes =
+    Math.floor(
+      seconds / 60
+    );
 
-  a.play().catch(()=>{btn.textContent='▶'});
 
-  a.onended=()=>{
-    btn.textContent='▶';
-    if(soundPreview===a)soundPreview=null;
+  const secs =
+    Math.floor(
+      seconds % 60
+    );
+
+
+  return (
+    `${minutes}:` +
+    String(secs)
+      .padStart(
+        2,
+        "0"
+      )
+  );
+
+}
+
+
+function escapeHtml(
+  text = ""
+) {
+
+  return String(text)
+
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
+
+}
+
+
+
+
+function realCover(
+  cover
+) {
+
+  return Boolean(
+
+    cover &&
+
+    !String(cover)
+      .includes(
+        "logo-play.png"
+      )
+
+  );
+
+}
+
+
+/* =========================================================
+   NORMALIZAR TRACK
+========================================================= */
+
+function normalizeTrack(
+  track
+) {
+
+  return {
+
+    id:
+      track.id,
+
+    title:
+      track.title,
+
+    artist:
+      track.artist,
+
+    album:
+      track.album,
+
+    category:
+      track.category,
+
+    type:
+      track.type ||
+      "music",
+
+    audioUrl:
+      track.audio_url,
+
+    downloadUrl:
+      track.audio_url,
+
+    cover:
+      track.cover_url ||
+      "logo-play.png",
+
+    createdAt:
+      track.created_at
+
   };
 
-  setTimeout(()=>{
-    if(soundPreview===a){
-      try{a.pause()}catch{}
-      btn.textContent='▶';
-      soundPreview=null;
-    }
-  },12000);
-};
+}
 
-window.selectSound=(url,title,id)=>{
-  $('selectedSoundUrl').value=url;
-  $('selectedSoundTitle').value=title;
-  $('selectedSoundLabel').textContent='♫ '+title;
 
-  document.querySelectorAll('.sound-item').forEach(x=>x.classList.remove('selected'));
-  $('sound-'+id)?.classList.add('selected');
+/* =========================================================
+   FAVORITOS
+========================================================= */
 
-  if(soundPreview){
-    try{soundPreview.pause()}catch{}
-    soundPreview=null;
+function isFavorite(
+  trackId
+) {
+
+  return favorites.some(
+    id =>
+      String(id) ===
+      String(trackId)
+  );
+
+}
+
+
+function toggleFavorite(
+  trackId
+) {
+
+  if (
+    isFavorite(
+      trackId
+    )
+  ) {
+
+    favorites =
+      favorites.filter(
+        id =>
+          String(id) !==
+          String(trackId)
+      );
+
   }
 
-  setTimeout(()=>closeSoundPicker(),250);
-};
+  else {
 
-window.toggleReelCreator=()=>{
-  $('reelCreator').classList.toggle('hidden');
-};
+    favorites.push(
+      trackId
+    );
 
-window.createReel=async()=>{
-  const image=$('reelImage').files[0];
-  const caption=$('reelCaption').value.trim();
-  const audio_url=$('selectedSoundUrl').value||null;
+  }
 
-  if(!image){
-    $('reelMsg').textContent='Adicione uma foto para criar o Reels.';
+
+  saveFavorites();
+
+  updateFavoriteButton();
+
+  renderFavorites();
+
+  refreshVisibleTracks();
+
+}
+
+
+function updateFavoriteButton() {
+
+  const button =
+    $("#favoriteCurrent");
+
+
+  if (!button) {
     return;
   }
 
-  try{
-    $('reelMsg').textContent='Publicando Reels...';
 
-    const image_url=await upload('reels-images',image);
+  if (!currentTrack) {
 
-    const {error}=await sb.from('reels').insert({
-      user_id:me.id,
-      caption,
-      image_url,
-      audio_url
+    button.textContent =
+      "♡";
+
+    button.classList
+      .remove(
+        "active"
+      );
+
+    return;
+  }
+
+
+  if (
+    isFavorite(
+      currentTrack.id
+    )
+  ) {
+
+    button.textContent =
+      "♥";
+
+    button.classList
+      .add(
+        "active"
+      );
+
+    button.title =
+      "Remover dos favoritos";
+
+  }
+
+  else {
+
+    button.textContent =
+      "♡";
+
+    button.classList
+      .remove(
+        "active"
+      );
+
+    button.title =
+      "Adicionar aos favoritos";
+
+  }
+
+}
+
+
+/* =========================================================
+   REPEAT
+========================================================= */
+
+function updateRepeatButton() {
+
+  const button =
+    $("#repeatButton");
+
+
+  if (!button) {
+    return;
+  }
+
+
+  button.classList
+    .remove(
+      "active"
+    );
+
+
+  if (
+    repeatMode ===
+    "off"
+  ) {
+
+    button.textContent =
+      "🔁";
+
+    button.title =
+      "Repetição desligada";
+
+  }
+
+
+  if (
+    repeatMode ===
+    "all"
+  ) {
+
+    button.textContent =
+      "🔁";
+
+    button.title =
+      "Repetir fila";
+
+    button.classList
+      .add(
+        "active"
+      );
+
+  }
+
+
+  if (
+    repeatMode ===
+    "one"
+  ) {
+
+    button.textContent =
+      "🔂";
+
+    button.title =
+      "Repetir esta música";
+
+    button.classList
+      .add(
+        "active"
+      );
+
+  }
+
+}
+
+
+function cycleRepeatMode() {
+
+  if (
+    repeatMode ===
+    "off"
+  ) {
+
+    repeatMode =
+      "all";
+
+  }
+
+  else if (
+    repeatMode ===
+    "all"
+  ) {
+
+    repeatMode =
+      "one";
+
+  }
+
+  else {
+
+    repeatMode =
+      "off";
+
+  }
+
+
+  localStorage.setItem(
+    REPEAT_KEY,
+    repeatMode
+  );
+
+
+  updateRepeatButton();
+
+}
+
+
+/* =========================================================
+   DOWNLOAD ATUAL
+========================================================= */
+
+function updateDownloadButton() {
+
+  const link =
+    $("#downloadCurrent");
+
+
+  if (!link) {
+    return;
+  }
+
+
+  if (
+    !currentTrack ||
+    !currentTrack.downloadUrl
+  ) {
+
+    link.href =
+      "#";
+
+    link.removeAttribute(
+      "download"
+    );
+
+    link.style.opacity =
+      ".45";
+
+    return;
+
+  }
+
+
+  link.href =
+    currentTrack.downloadUrl;
+
+
+  link.setAttribute(
+    "download",
+    `${currentTrack.artist} - ${currentTrack.title}.mp3`
+  );
+
+
+  link.style.opacity =
+    "1";
+
+}
+
+
+/* =========================================================
+   PLAYER
+========================================================= */
+
+function playById(
+  id
+) {
+
+  const found =
+    tracks.find(
+      track =>
+        String(track.id) ===
+        String(id)
+    );
+
+
+  if (!found) {
+    return;
+  }
+
+
+  currentTrack =
+    found;
+
+
+  if (
+    currentAlbumTracks.length &&
+
+    currentAlbumTracks.some(
+      track =>
+        String(track.id) ===
+        String(id)
+    )
+  ) {
+
+    queue =
+      [
+        ...currentAlbumTracks
+      ];
+
+  }
+
+  else if (
+    currentPlaylist &&
+    currentPlaylist.tracks
+  ) {
+
+    const playlistTracks =
+      getTracksFromIds(
+        currentPlaylist.tracks
+      );
+
+
+    if (
+      playlistTracks.some(
+        track =>
+          String(track.id) ===
+          String(id)
+      )
+    ) {
+
+      queue =
+        playlistTracks;
+
+    }
+
+    else {
+
+      currentPlaylist =
+        null;
+
+    }
+
+  }
+
+
+  if (
+    !queue.length ||
+    !queue.some(
+      track =>
+        String(track.id) ===
+        String(id)
+    )
+  ) {
+
+    if (
+      currentTrack.type ===
+      "podcast"
+    ) {
+
+      queue =
+        tracks.filter(
+          track =>
+            track.type ===
+            "podcast"
+        );
+
+    }
+
+    else {
+
+      queue =
+        tracks.filter(
+          track =>
+            track.type !==
+            "podcast"
+        );
+
+    }
+
+  }
+
+
+  currentIndex =
+    queue.findIndex(
+      track =>
+        String(track.id) ===
+        String(id)
+    );
+
+
+  if (
+    currentIndex < 0
+  ) {
+
+    currentIndex =
+      0;
+
+  }
+
+
+  $("#kind").textContent =
+    currentTrack.type ===
+      "podcast"
+      ? "PODCAST"
+      : "LOUVOR";
+
+
+  $("#title").textContent =
+    currentTrack.title;
+
+
+  $("#artist").textContent =
+    `${currentTrack.artist} • ${currentTrack.album || ""}`;
+
+
+  $("#cover").src =
+    currentTrack.cover ||
+    "logo-play.png";
+
+
+  updateFavoriteButton();
+
+  updateDownloadButton();
+
+  updateMediaSession();
+
+
+  if (
+    !currentTrack.audioUrl
+  ) {
+
+    $("#artist").textContent =
+      `${currentTrack.artist} • áudio indisponível`;
+
+    return;
+
+  }
+
+
+  audio.src =
+    currentTrack.audioUrl;
+
+
+  audio
+    .play()
+    .catch(
+      error => {
+
+        console.log(
+          "Reprodução aguardando interação:",
+          error
+        );
+
+      }
+    );
+
+}
+
+
+/* =========================================================
+   PRÓXIMA
+========================================================= */
+
+function nextTrack() {
+
+  if (!queue.length) {
+    return;
+  }
+
+
+  if (
+    currentIndex <
+    queue.length - 1
+  ) {
+
+    currentIndex++;
+
+    playById(
+      queue[
+        currentIndex
+      ].id
+    );
+
+    return;
+
+  }
+
+
+  if (
+    repeatMode ===
+    "all"
+  ) {
+
+    currentIndex =
+      0;
+
+    playById(
+      queue[0].id
+    );
+
+    return;
+
+  }
+
+
+  audio.pause();
+
+  audio.currentTime =
+    0;
+
+}
+
+
+/* =========================================================
+   ANTERIOR
+========================================================= */
+
+function previousTrack() {
+
+  if (!queue.length) {
+    return;
+  }
+
+
+  if (
+    audio.currentTime >
+    4
+  ) {
+
+    audio.currentTime =
+      0;
+
+    return;
+
+  }
+
+
+  currentIndex--;
+
+
+  if (
+    currentIndex < 0
+  ) {
+
+    if (
+      repeatMode ===
+      "all"
+    ) {
+
+      currentIndex =
+        queue.length - 1;
+
+    }
+
+    else {
+
+      currentIndex =
+        0;
+
+    }
+
+  }
+
+
+  playById(
+    queue[
+      currentIndex
+    ].id
+  );
+
+}
+
+
+/* =========================================================
+   FIM DA MÚSICA
+========================================================= */
+
+audio.onended =
+  () => {
+
+    if (
+      repeatMode ===
+      "one"
+    ) {
+
+      audio.currentTime =
+        0;
+
+      audio.play();
+
+      return;
+
+    }
+
+
+    nextTrack();
+
+  };
+
+
+/* =========================================================
+   PLAY / PAUSE
+========================================================= */
+
+$("#play").onclick =
+  () => {
+
+    if (!currentTrack) {
+
+      const first =
+        tracks.find(
+          track =>
+            track.type !==
+            "podcast"
+        );
+
+
+      if (first) {
+
+        playById(
+          first.id
+        );
+
+      }
+
+      return;
+
+    }
+
+
+    if (
+      audio.paused
+    ) {
+
+      audio.play();
+
+    }
+
+    else {
+
+      audio.pause();
+
+    }
+
+  };
+
+
+$("#next").onclick =
+  nextTrack;
+
+
+$("#prev").onclick =
+  previousTrack;
+
+
+audio.onplay =
+  () => {
+
+    $("#play").textContent = "⏸";
+    if ($("#trackViewPlay")) $("#trackViewPlay").textContent = "⏸ Pausar";
+
+  };
+
+
+audio.onpause =
+  () => {
+
+    $("#play").textContent = "▶";
+    if ($("#trackViewPlay")) $("#trackViewPlay").textContent = "▶ Tocar música";
+
+  };
+
+
+/* =========================================================
+   TEMPO
+========================================================= */
+
+audio.onloadedmetadata =
+  () => {
+
+    $("#dur").textContent =
+      formatTime(
+        audio.duration
+      );
+
+  };
+
+
+audio.ontimeupdate =
+  () => {
+
+    $("#cur").textContent =
+      formatTime(
+        audio.currentTime
+      );
+
+
+    if (
+      audio.duration
+    ) {
+
+      $("#seek").value =
+        String(
+          (
+            audio.currentTime /
+            audio.duration
+          ) * 100
+        );
+
+    }
+
+  };
+
+
+$("#seek").oninput =
+  event => {
+
+    if (
+      !audio.duration
+    ) {
+      return;
+    }
+
+
+    audio.currentTime =
+      (
+        Number(
+          event.target.value
+        ) /
+        100
+      ) *
+      audio.duration;
+
+  };
+
+
+/* =========================================================
+   VOLUME
+========================================================= */
+
+audio.volume =
+  0.85;
+
+
+$("#volume").oninput =
+  event => {
+
+    audio.volume =
+      Number(
+        event.target.value
+      );
+
+  };
+
+
+/* =========================================================
+   FAVORITO ATUAL
+========================================================= */
+
+$("#favoriteCurrent").onclick =
+  () => {
+
+    if (!currentTrack) {
+      return;
+    }
+
+
+    toggleFavorite(
+      currentTrack.id
+    );
+
+  };
+
+
+/* =========================================================
+   REPETIR
+========================================================= */
+
+$("#repeatButton").onclick =
+  cycleRepeatMode;
+
+
+/* =========================================================
+   DOWNLOAD
+========================================================= */
+
+$("#downloadCurrent").onclick =
+  event => {
+
+    if (
+      !currentTrack ||
+      !currentTrack.downloadUrl
+    ) {
+
+      event.preventDefault();
+
+    }
+
+  };
+
+
+/* =========================================================
+   PLAYLISTS
+========================================================= */
+
+function createPlaylist(
+  name
+) {
+
+  const clean =
+    String(name || "")
+      .trim();
+
+
+  if (!clean) {
+    return null;
+  }
+
+
+  const playlist = {
+
+    id:
+      `playlist-${Date.now()}`,
+
+    name:
+      clean,
+
+    tracks:
+      []
+
+  };
+
+
+  playlists.push(
+    playlist
+  );
+
+
+  savePlaylists();
+
+  renderPlaylists();
+
+  return playlist;
+
+}
+
+
+function getTracksFromIds(
+  ids
+) {
+
+  return ids
+
+    .map(
+      id =>
+        tracks.find(
+          track =>
+            String(track.id) ===
+            String(id)
+        )
+    )
+
+    .filter(Boolean);
+
+}
+
+
+function addTrackToPlaylist(
+  playlistId,
+  trackId
+) {
+
+  const playlist =
+    playlists.find(
+      item =>
+        item.id ===
+        playlistId
+    );
+
+
+  if (!playlist) {
+    return;
+  }
+
+
+  if (
+    playlist.tracks.some(
+      id =>
+        String(id) ===
+        String(trackId)
+    )
+  ) {
+
+    alert(
+      "Essa música já está nessa playlist."
+    );
+
+    return;
+
+  }
+
+
+  playlist.tracks.push(
+    trackId
+  );
+
+
+  savePlaylists();
+
+  renderPlaylists();
+
+  closePlaylistModal();
+
+}
+
+
+function removeTrackFromPlaylist(
+  playlistId,
+  trackId
+) {
+
+  const playlist =
+    playlists.find(
+      item =>
+        item.id ===
+        playlistId
+    );
+
+
+  if (!playlist) {
+    return;
+  }
+
+
+  playlist.tracks =
+    playlist.tracks.filter(
+      id =>
+        String(id) !==
+        String(trackId)
+    );
+
+
+  savePlaylists();
+
+
+  if (
+    currentPlaylist &&
+    currentPlaylist.id ===
+    playlistId
+  ) {
+
+    currentPlaylist =
+      playlist;
+
+    renderCurrentPlaylist();
+
+  }
+
+}
+
+
+/* =========================================================
+   MODAL PLAYLIST
+========================================================= */
+
+function openPlaylistModal(
+  trackId
+) {
+
+  const track =
+    tracks.find(
+      item =>
+        String(item.id) ===
+        String(trackId)
+    );
+
+
+  if (!track) {
+    return;
+  }
+
+
+  playlistModalTrack =
+    track;
+
+
+  $("#playlistModalTrack")
+    .textContent =
+    `${track.artist} — ${track.title}`;
+
+
+  renderPlaylistChoices();
+
+
+  $("#playlistModal")
+    .classList
+    .remove(
+      "hidden"
+    );
+
+}
+
+
+function closePlaylistModal() {
+
+  $("#playlistModal")
+    .classList
+    .add(
+      "hidden"
+    );
+
+
+  playlistModalTrack =
+    null;
+
+}
+
+
+function renderPlaylistChoices() {
+
+  const container =
+    $("#playlistChoices");
+
+
+  if (!playlists.length) {
+
+    container.innerHTML =
+      `
+      <div class="empty">
+        Nenhuma playlist criada ainda.
+      </div>
+      `;
+
+    return;
+
+  }
+
+
+  container.innerHTML =
+    playlists
+      .map(
+        playlist =>
+          `
+          <button
+            class="playlist-choice"
+            data-id="${playlist.id}"
+          >
+            ♪ ${escapeHtml(
+              playlist.name
+            )}
+            •
+            ${playlist.tracks.length}
+            ${
+              playlist.tracks.length ===
+              1
+                ? "música"
+                : "músicas"
+            }
+          </button>
+          `
+      )
+      .join("");
+
+
+  container
+    .querySelectorAll(
+      ".playlist-choice"
+    )
+    .forEach(
+      button => {
+
+        button.onclick =
+          () => {
+
+            if (
+              !playlistModalTrack
+            ) {
+              return;
+            }
+
+
+            addTrackToPlaylist(
+              button.dataset.id,
+              playlistModalTrack.id
+            );
+
+          };
+
+      }
+    );
+
+}
+
+
+$("#closePlaylistModal")
+  .onclick =
+  closePlaylistModal;
+
+
+$("#playlistModal")
+  .onclick =
+  event => {
+
+    if (
+      event.target.id ===
+      "playlistModal"
+    ) {
+
+      closePlaylistModal();
+
+    }
+
+  };
+
+
+$("#newPlaylistFromModal")
+  .onclick =
+  () => {
+
+    const name =
+      prompt(
+        "Nome da nova playlist:"
+      );
+
+
+    const playlist =
+      createPlaylist(
+        name
+      );
+
+
+    if (
+      playlist &&
+      playlistModalTrack
+    ) {
+
+      addTrackToPlaylist(
+        playlist.id,
+        playlistModalTrack.id
+      );
+
+    }
+
+  };
+
+
+$("#playlistCurrent")
+  .onclick =
+  () => {
+
+    if (!currentTrack) {
+      return;
+    }
+
+
+    openPlaylistModal(
+      currentTrack.id
+    );
+
+  };
+
+
+/* =========================================================
+   BIBLIOTECA
+========================================================= */
+
+function hideMainViews() {
+
+  [
+    "#homeHero",
+    "#artistsSection",
+    "#albumsSection",
+    "#featuredSection",
+    "#albumView",
+    "#trackView",
+    "#playlistView"
+  ]
+    .forEach(
+      selector => {
+
+        const el =
+          $(selector);
+
+
+        if (el) {
+
+          el.classList
+            .add(
+              "hidden"
+            );
+
+        }
+
+      }
+    );
+
+}
+
+
+function showHome() {
+
+  hideMainViews();
+
+
+  [
+    "#homeHero",
+    "#artistsSection",
+    "#albumsSection",
+    "#featuredSection"
+  ]
+    .forEach(
+      selector => {
+
+        $(selector)
+          ?.classList
+          .remove(
+            "hidden"
+          );
+
+      }
+    );
+
+
+  $("#librarySection")
+    ?.classList
+    .add(
+      "hidden"
+    );
+
+}
+
+
+/* =========================================================
+   ABRIR BIBLIOTECA
+========================================================= */
+
+function openLibrary() {
+
+  hideMainViews();
+
+
+  $("#librarySection")
+    .classList
+    .remove(
+      "hidden"
+    );
+
+
+  showFavoritesTab();
+
+
+  window.scrollTo({
+    top:
+      0,
+
+    behavior:
+      "smooth"
+  });
+
+}
+
+
+$("#libraryToggle")
+  .onclick =
+  openLibrary;
+
+
+$("#closeLibrary")
+  .onclick =
+  showHome;
+
+
+/* =========================================================
+   FAVORITOS
+========================================================= */
+
+function renderFavorites() {
+
+  const container =
+    $("#favoritesList");
+
+
+  if (!container) {
+    return;
+  }
+
+
+  const favoriteTracks =
+    tracks.filter(
+      track =>
+        isFavorite(
+          track.id
+        )
+    );
+
+
+  if (
+    !favoriteTracks.length
+  ) {
+
+    container.innerHTML =
+      `
+      <div class="empty">
+        Você ainda não adicionou favoritos.
+      </div>
+      `;
+
+    return;
+
+  }
+
+
+  renderTrackList(
+    container,
+    favoriteTracks,
+    {
+      showRemoveFavorite:
+        true
+    }
+  );
+
+}
+
+
+function showFavoritesTab() {
+
+  $("#favoritesTab")
+    .classList
+    .add(
+      "active"
+    );
+
+
+  $("#playlistsTab")
+    .classList
+    .remove(
+      "active"
+    );
+
+
+  $("#favoritesView")
+    .classList
+    .remove(
+      "hidden"
+    );
+
+
+  $("#playlistsView")
+    .classList
+    .add(
+      "hidden"
+    );
+
+
+  renderFavorites();
+
+}
+
+
+function showPlaylistsTab() {
+
+  $("#favoritesTab")
+    .classList
+    .remove(
+      "active"
+    );
+
+
+  $("#playlistsTab")
+    .classList
+    .add(
+      "active"
+    );
+
+
+  $("#favoritesView")
+    .classList
+    .add(
+      "hidden"
+    );
+
+
+  $("#playlistsView")
+    .classList
+    .remove(
+      "hidden"
+    );
+
+
+  renderPlaylists();
+
+}
+
+
+$("#favoritesTab")
+  .onclick =
+  showFavoritesTab;
+
+
+$("#playlistsTab")
+  .onclick =
+  showPlaylistsTab;
+
+
+/* =========================================================
+   TOCAR FAVORITOS
+========================================================= */
+
+$("#playFavorites")
+  .onclick =
+  () => {
+
+    const favoriteTracks =
+      tracks.filter(
+        track =>
+          isFavorite(
+            track.id
+          )
+      );
+
+
+    if (
+      !favoriteTracks.length
+    ) {
+      return;
+    }
+
+
+    currentPlaylist =
+      null;
+
+
+    currentAlbumTracks =
+      [];
+
+
+    queue =
+      favoriteTracks;
+
+
+    currentIndex =
+      0;
+
+
+    playById(
+      queue[0].id
+    );
+
+  };
+
+
+/* =========================================================
+   PLAYLISTS DA BIBLIOTECA
+========================================================= */
+
+function renderPlaylists() {
+
+  const container =
+    $("#playlistsGrid");
+
+
+  if (!container) {
+    return;
+  }
+
+
+  if (!playlists.length) {
+
+    container.innerHTML =
+      `
+      <div class="empty">
+        Nenhuma playlist criada.
+      </div>
+      `;
+
+    return;
+
+  }
+
+
+  container.innerHTML =
+    playlists
+      .map(
+        playlist =>
+          `
+          <article
+            class="album-card playlist-card"
+            data-id="${playlist.id}"
+          >
+
+            <div
+              class="album-cover"
+              style="
+                display:grid;
+                place-items:center;
+                font-size:60px;
+                color:#f0ad2f;
+              "
+            >
+              ♪
+            </div>
+
+            <div class="album-info">
+
+              <strong>
+                ${escapeHtml(
+                  playlist.name
+                )}
+              </strong>
+
+              <span>
+                ${playlist.tracks.length}
+                ${
+                  playlist.tracks.length ===
+                  1
+                    ? "música"
+                    : "músicas"
+                }
+              </span>
+
+            </div>
+
+          </article>
+          `
+      )
+      .join("");
+
+
+  container
+    .querySelectorAll(
+      ".playlist-card"
+    )
+    .forEach(
+      card => {
+
+        card.onclick =
+          () =>
+            openPlaylist(
+              card.dataset.id
+            );
+
+      }
+    );
+
+}
+
+
+$("#createPlaylistButton")
+  .onclick =
+  () => {
+
+    const name =
+      prompt(
+        "Nome da nova playlist:"
+      );
+
+
+    if (
+      createPlaylist(
+        name
+      )
+    ) {
+
+      showPlaylistsTab();
+
+    }
+
+  };
+
+
+/* =========================================================
+   ABRIR PLAYLIST
+========================================================= */
+
+function openPlaylist(
+  playlistId
+) {
+
+  const playlist =
+    playlists.find(
+      item =>
+        item.id ===
+        playlistId
+    );
+
+
+  if (!playlist) {
+    return;
+  }
+
+
+  currentPlaylist =
+    playlist;
+
+
+  hideMainViews();
+
+
+  $("#librarySection")
+    .classList
+    .add(
+      "hidden"
+    );
+
+
+  $("#playlistView")
+    .classList
+    .remove(
+      "hidden"
+    );
+
+
+  renderCurrentPlaylist();
+
+
+  window.scrollTo({
+    top:
+      0,
+
+    behavior:
+      "smooth"
+  });
+
+}
+
+
+function renderCurrentPlaylist() {
+
+  if (!currentPlaylist) {
+    return;
+  }
+
+
+  const playlistTracks =
+    getTracksFromIds(
+      currentPlaylist.tracks
+    );
+
+
+  $("#playlistViewTitle")
+    .textContent =
+    currentPlaylist.name;
+
+
+  $("#playlistViewMeta")
+    .textContent =
+    `${playlistTracks.length} ${
+      playlistTracks.length === 1
+        ? "música"
+        : "músicas"
+    }`;
+
+
+  const container =
+    $("#playlistTracks");
+
+
+  if (
+    !playlistTracks.length
+  ) {
+
+    container.innerHTML =
+      `
+      <div class="empty">
+        Essa playlist está vazia.
+      </div>
+      `;
+
+    return;
+
+  }
+
+
+  renderTrackList(
+    container,
+    playlistTracks,
+    {
+      playlistId:
+        currentPlaylist.id
+    }
+  );
+
+}
+
+
+/* =========================================================
+   VOLTAR PLAYLIST
+========================================================= */
+
+$("#backPlaylist")
+  .onclick =
+  () => {
+
+    currentPlaylist =
+      null;
+
+
+    hideMainViews();
+
+
+    $("#librarySection")
+      .classList
+      .remove(
+        "hidden"
+      );
+
+
+    showPlaylistsTab();
+
+  };
+
+
+/* =========================================================
+   TOCAR PLAYLIST
+========================================================= */
+
+$("#playlistPlay")
+  .onclick =
+  () => {
+
+    if (!currentPlaylist) {
+      return;
+    }
+
+
+    const list =
+      getTracksFromIds(
+        currentPlaylist.tracks
+      );
+
+
+    if (!list.length) {
+      return;
+    }
+
+
+    queue =
+      list;
+
+
+    currentIndex =
+      0;
+
+
+    playById(
+      queue[0].id
+    );
+
+  };
+
+
+$("#playlistShuffle")
+  .onclick =
+  () => {
+
+    if (!currentPlaylist) {
+      return;
+    }
+
+
+    const list =
+      getTracksFromIds(
+        currentPlaylist.tracks
+      );
+
+
+    if (!list.length) {
+      return;
+    }
+
+
+    const random =
+      Math.floor(
+        Math.random() *
+        list.length
+      );
+
+
+    queue =
+      list;
+
+
+    currentIndex =
+      random;
+
+
+    playById(
+      queue[random].id
+    );
+
+  };
+
+
+/* =========================================================
+   EXCLUIR PLAYLIST
+========================================================= */
+
+$("#deletePlaylist")
+  .onclick =
+  () => {
+
+    if (!currentPlaylist) {
+      return;
+    }
+
+
+    const ok =
+      confirm(
+        `Excluir a playlist "${currentPlaylist.name}"?`
+      );
+
+
+    if (!ok) {
+      return;
+    }
+
+
+    playlists =
+      playlists.filter(
+        item =>
+          item.id !==
+          currentPlaylist.id
+      );
+
+
+    savePlaylists();
+
+
+    currentPlaylist =
+      null;
+
+
+    hideMainViews();
+
+
+    $("#librarySection")
+      .classList
+      .remove(
+        "hidden"
+      );
+
+
+    showPlaylistsTab();
+
+  };
+
+
+/* =========================================================
+   LISTA GENÉRICA DE FAIXAS
+========================================================= */
+
+function renderTrackList(
+  container,
+  list,
+  options = {}
+) {
+
+  if (!container) {
+    return;
+  }
+
+
+  container.innerHTML =
+    list
+      .map(
+        (track, index) => {
+
+          const favorite =
+            isFavorite(
+              track.id
+            );
+
+
+          return `
+            <article
+              class="track"
+              data-id="${track.id}"
+            >
+
+              <div class="art">
+
+                <img
+                  src="${escapeHtml(
+                    track.cover
+                  )}"
+                  alt="${escapeHtml(
+                    track.title
+                  )}"
+                  onerror="this.src='logo-play.png'"
+                >
+
+              </div>
+
+
+              <div class="info">
+
+                <strong>
+                  ${options.numbered
+                    ? `${index + 1}. `
+                    : ""
+                  }
+                  ${escapeHtml(
+                    track.title
+                  )}
+                </strong>
+
+                <span>
+                  ${escapeHtml(
+                    track.artist
+                  )}
+                  •
+                  ${escapeHtml(
+                    track.album ||
+                    track.category
+                  )}
+                </span>
+
+              </div>
+
+
+              <div class="actions">
+
+                <button class="playOne primary-track-action" title="Tocar" aria-label="Tocar">▶</button>
+
+                <button class="favoriteTrack" title="Favorito" aria-label="Favorito">
+                  ${favorite ? "♥" : "♡"}
+                </button>
+
+                <button class="moreTrack" title="Mais opções" aria-label="Mais opções">⋮</button>
+
+                <div class="track-more-menu hidden">
+                  <button class="addPlaylistTrack" title="Adicionar à playlist">＋ Adicionar à playlist</button>
+
+                  ${track.downloadUrl ? `
+                    <a
+                      href="${escapeHtml(track.downloadUrl)}"
+                      download
+                      title="Baixar"
+                      onclick="event.stopPropagation()"
+                    >⇩ Baixar música</a>
+                  ` : ""}
+
+                  ${options.playlistId ? `
+                    <button class="removePlaylistTrack" title="Remover da playlist">✕ Remover da playlist</button>
+                  ` : ""}
+                </div>
+
+              </div>
+
+            </article>
+          `;
+
+        }
+      )
+      .join("");
+
+
+  bindTrackButtons(
+    container,
+    options
+  );
+
+}
+
+
+/* =========================================================
+   EVENTOS DAS FAIXAS
+========================================================= */
+
+function bindTrackButtons(
+  container,
+  options = {}
+) {
+
+  container
+    .querySelectorAll(".track")
+    .forEach(element => {
+
+      const id = element.dataset.id;
+
+      element
+        .querySelector(".playOne")
+        ?.addEventListener("click", event => {
+          event.stopPropagation();
+          playById(id);
+        });
+
+      element
+        .querySelector(".favoriteTrack")
+        ?.addEventListener("click", event => {
+          event.stopPropagation();
+          toggleFavorite(id);
+        });
+
+      element
+        .querySelector(".moreTrack")
+        ?.addEventListener("click", event => {
+          event.stopPropagation();
+          const menu = element.querySelector(".track-more-menu");
+
+          container
+            .querySelectorAll(".track-more-menu")
+            .forEach(other => {
+              if (other !== menu) other.classList.add("hidden");
+            });
+
+          menu?.classList.toggle("hidden");
+        });
+
+      element
+        .querySelector(".addPlaylistTrack")
+        ?.addEventListener("click", event => {
+          event.stopPropagation();
+          openPlaylistModal(id);
+          element.querySelector(".track-more-menu")?.classList.add("hidden");
+        });
+
+      element
+        .querySelector(".removePlaylistTrack")
+        ?.addEventListener("click", event => {
+          event.stopPropagation();
+          if (options.playlistId) {
+            removeTrackFromPlaylist(options.playlistId, id);
+          }
+        });
+
+      [".art", ".info"].forEach(selector => {
+        element
+          .querySelector(selector)
+          ?.addEventListener("click", () => {
+            const fromAlbum = !$("#albumView")?.classList.contains("hidden");
+            playById(id);
+            openTrackView(id, fromAlbum ? "album" : "home");
+          });
+      });
+
+    });
+}
+
+
+/* =========================================================
+   CATÁLOGO
+========================================================= */
+
+function renderCatalog(
+  list
+) {
+
+  filteredTracks =
+    list;
+
+
+  const container =
+    $("#catalog");
+
+
+  if (!list.length) {
+
+    container.innerHTML =
+      `
+      <div class="empty">
+        Nenhuma música encontrada.
+      </div>
+      `;
+
+    return;
+
+  }
+
+
+  renderTrackList(
+    container,
+    list
+  );
+
+}
+
+
+/* =========================================================
+   ATUALIZAR TELAS VISÍVEIS
+========================================================= */
+
+function refreshVisibleTracks() {
+
+  renderCatalog(
+    filteredTracks.length
+      ? filteredTracks
+      : tracks
+  );
+
+
+  if (
+    currentAlbumTracks.length
+  ) {
+
+    renderAlbumTracks(
+      currentAlbumTracks
+    );
+
+  }
+
+
+  if (
+    currentPlaylist
+  ) {
+
+    renderCurrentPlaylist();
+
+  }
+
+}
+
+
+/* =========================================================
+   BUSCA
+========================================================= */
+
+$("#searchToggle")
+  .onclick =
+  () => {
+
+    $("#searchBox")
+      .classList
+      .toggle(
+        "hidden"
+      );
+
+
+    if (
+      !$("#searchBox")
+        .classList
+        .contains(
+          "hidden"
+        )
+    ) {
+
+      $("#searchInput")
+        .focus();
+
+    }
+
+  };
+
+
+$("#searchInput")
+  .oninput =
+  event => {
+
+    const query =
+      event.target.value
+        .toLowerCase()
+        .trim();
+
+
+    const filtered =
+      tracks.filter(
+        track => {
+
+          const text =
+            `
+            ${track.title}
+            ${track.artist}
+            ${track.album || ""}
+            ${track.category}
+            `
+              .toLowerCase();
+
+
+          return text.includes(
+            query
+          );
+
+        }
+      );
+
+
+    showHome();
+
+
+    renderCatalog(
+      filtered
+    );
+
+  };
+
+
+/* =========================================================
+   CATEGORIAS
+========================================================= */
+
+document
+  .querySelectorAll(
+    ".chips button"
+  )
+  .forEach(
+    button => {
+
+      button.onclick =
+        () => {
+
+          document
+            .querySelectorAll(
+              ".chips button"
+            )
+            .forEach(
+              other =>
+                other.classList
+                  .remove(
+                    "active"
+                  )
+            );
+
+
+          button.classList
+            .add(
+              "active"
+            );
+
+
+          const category =
+            button.dataset.cat;
+
+
+          showHome();
+
+
+          if (
+            category ===
+            "Todos"
+          ) {
+
+            renderArtists();
+
+            renderAlbums();
+
+            renderCatalog(
+              tracks
+            );
+
+            return;
+
+          }
+
+
+          const filtered =
+            tracks.filter(
+              track =>
+                track.category ===
+                category
+            );
+
+
+          renderCatalog(
+            filtered
+          );
+
+
+          renderAlbumsByTracks(
+            filtered
+          );
+
+        };
+
+    }
+  );
+
+
+/* =========================================================
+   HERO
+========================================================= */
+
+$("#heroPlay")
+  .onclick =
+  () => {
+
+    const first =
+      tracks.find(
+        track =>
+          track.type !==
+          "podcast"
+      );
+
+
+    if (first) {
+
+      currentAlbumTracks =
+        [];
+
+      currentPlaylist =
+        null;
+
+      playById(
+        first.id
+      );
+
+    }
+
+  };
+
+
+$("#heroShuffle")
+  .onclick =
+  () => {
+
+    const musics =
+      tracks.filter(
+        track =>
+          track.type !==
+          "podcast"
+      );
+
+
+    if (!musics.length) {
+      return;
+    }
+
+
+    const random =
+      musics[
+        Math.floor(
+          Math.random() *
+          musics.length
+        )
+      ];
+
+
+    currentAlbumTracks =
+      [];
+
+    currentPlaylist =
+      null;
+
+
+    playById(
+      random.id
+    );
+
+  };
+
+
+$("#playAll")
+  .onclick =
+  () => {
+
+    const list =
+      filteredTracks.filter(
+        track =>
+          track.type !==
+          "podcast"
+      );
+
+
+    if (!list.length) {
+      return;
+    }
+
+
+    currentAlbumTracks =
+      [];
+
+    currentPlaylist =
+      null;
+
+    queue =
+      list;
+
+    currentIndex =
+      0;
+
+
+    playById(
+      queue[0].id
+    );
+
+  };
+
+
+/* =========================================================
+   ARTISTAS
+========================================================= */
+
+function getArtistCover(
+  artistName
+) {
+
+  const artistTracks =
+    tracks.filter(
+      track =>
+        track.artist ===
+        artistName
+    );
+
+
+  const real =
+    artistTracks.find(
+      track =>
+        realCover(
+          track.cover
+        )
+    );
+
+
+  return real
+    ? real.cover
+    : (
+      artistTracks[0]?.cover ||
+      "logo-play.png"
+    );
+
+}
+
+
+function renderArtists() {
+
+  const container =
+    $("#artistsGrid");
+
+
+  const artists =
+    [
+      ...new Set(
+
+        tracks
+
+          .filter(
+            track =>
+              track.type !==
+              "podcast"
+          )
+
+          .map(
+            track =>
+              track.artist
+          )
+
+      )
+    ];
+
+
+  if (!artists.length) {
+
+    container.innerHTML =
+      `
+      <div class="empty">
+        Nenhum artista publicado.
+      </div>
+      `;
+
+    return;
+
+  }
+
+
+  container.innerHTML =
+    artists
+      .map(
+        artist => {
+
+          const artistTracks =
+            tracks.filter(
+              track =>
+                track.artist ===
+                  artist &&
+                track.type !==
+                  "podcast"
+            );
+
+
+          const albums =
+            new Set(
+              artistTracks.map(
+                track =>
+                  track.album
+              )
+            );
+
+
+          return `
+            <article
+              class="artist-card"
+              data-artist="${escapeHtml(
+                artist
+              )}"
+            >
+
+              <div class="artist-cover">
+
+                <img
+                  src="${escapeHtml(
+                    getArtistCover(
+                      artist
+                    )
+                  )}"
+                  alt="${escapeHtml(
+                    artist
+                  )}"
+                  onerror="this.src='logo-play.png'"
+                >
+
+              </div>
+
+              <div class="artist-info">
+
+                <strong>
+                  ${escapeHtml(
+                    artist
+                  )}
+                </strong>
+
+                <span>
+                  ${albums.size}
+                  ${
+                    albums.size === 1
+                      ? "álbum"
+                      : "álbuns"
+                  }
+                </span>
+
+              </div>
+
+            </article>
+          `;
+
+        }
+      )
+      .join("");
+
+
+  container
+    .querySelectorAll(
+      ".artist-card"
+    )
+    .forEach(
+      card => {
+
+        card.onclick =
+          () => {
+
+            const artist =
+              card.dataset.artist;
+
+
+            renderAlbums(
+              artist
+            );
+
+
+            renderCatalog(
+              tracks.filter(
+                track =>
+                  track.artist ===
+                  artist
+              )
+            );
+
+
+            $("#albumsSection")
+              .scrollIntoView({
+                behavior:
+                  "smooth",
+                block:
+                  "start"
+              });
+
+          };
+
+      }
+    );
+
+}
+
+
+/* =========================================================
+   ÁLBUNS
+========================================================= */
+
+function makeAlbumMap(
+  sourceTracks
+) {
+
+  const albumMap =
+    new Map();
+
+
+  sourceTracks
+
+    .filter(
+      track =>
+        track.type !==
+        "podcast"
+    )
+
+    .forEach(
+      track => {
+
+        const key =
+          `${track.artist}|||${track.album}`;
+
+
+        if (
+          !albumMap.has(
+            key
+          )
+        ) {
+
+          albumMap.set(
+            key,
+            {
+
+              artist:
+                track.artist,
+
+              album:
+                track.album,
+
+              category:
+                track.category,
+
+              cover:
+                realCover(
+                  track.cover
+                )
+                  ? track.cover
+                  : "logo-play.png",
+
+              tracks:
+                []
+
+            }
+          );
+
+        }
+
+
+        const albumData =
+          albumMap.get(
+            key
+          );
+
+
+        albumData.tracks
+          .push(
+            track
+          );
+
+
+        if (
+          !realCover(
+            albumData.cover
+          ) &&
+          realCover(
+            track.cover
+          )
+        ) {
+
+          albumData.cover =
+            track.cover;
+
+        }
+
+      }
+    );
+
+
+  return Array.from(
+    albumMap.values()
+  );
+
+}
+
+
+function renderAlbums(
+  selectedArtist = ""
+) {
+
+  let source =
+    tracks;
+
+
+  if (selectedArtist) {
+
+    source =
+      tracks.filter(
+        track =>
+          track.artist ===
+          selectedArtist
+      );
+
+  }
+
+
+  renderAlbumsByTracks(
+    source
+  );
+
+}
+
+
+function renderAlbumsByTracks(
+  source
+) {
+
+  const container =
+    $("#albumsGrid");
+
+
+  const albums =
+    makeAlbumMap(
+      source
+    );
+
+
+  if (!albums.length) {
+
+    container.innerHTML =
+      `
+      <div class="empty">
+        Nenhum álbum publicado.
+      </div>
+      `;
+
+    return;
+
+  }
+
+
+  container.innerHTML =
+    albums
+      .map(
+        album =>
+          `
+          <article
+            class="album-card"
+            data-artist="${escapeHtml(
+              album.artist
+            )}"
+            data-album="${escapeHtml(
+              album.album
+            )}"
+          >
+
+            <div class="album-cover">
+
+              <img
+                src="${escapeHtml(
+                  album.cover
+                )}"
+                alt="${escapeHtml(
+                  album.album
+                )}"
+                onerror="this.src='logo-play.png'"
+              >
+
+            </div>
+
+            <div class="album-info">
+
+              <strong>
+                ${escapeHtml(
+                  album.album
+                )}
+              </strong>
+
+              <span>
+                ${escapeHtml(
+                  album.artist
+                )}
+              </span>
+
+              <span>
+                ${album.tracks.length}
+                ${
+                  album.tracks.length ===
+                  1
+                    ? "faixa"
+                    : "faixas"
+                }
+              </span>
+
+            </div>
+
+          </article>
+          `
+      )
+      .join("");
+
+
+  container
+    .querySelectorAll(
+      ".album-card"
+    )
+    .forEach(
+      card => {
+
+        card.onclick =
+          () =>
+            openAlbumView(
+
+              card.dataset.artist,
+
+              card.dataset.album
+
+            );
+
+      }
+    );
+
+}
+
+
+/* =========================================================
+   ÁLBUM
+========================================================= */
+
+function openAlbumView(
+  artistName,
+  albumName
+) {
+
+  const albumTracks =
+    tracks.filter(
+      track =>
+        track.artist ===
+          artistName &&
+        track.album ===
+          albumName
+    );
+
+
+  if (!albumTracks.length) {
+    return;
+  }
+
+
+  currentAlbumTracks =
+    [
+      ...albumTracks
+    ];
+
+
+  const coverTrack =
+    albumTracks.find(
+      track =>
+        realCover(
+          track.cover
+        )
+    );
+
+
+  currentAlbum = {
+
+    artist:
+      artistName,
+
+    album:
+      albumName,
+
+    cover:
+      coverTrack?.cover ||
+      albumTracks[0]
+        .cover ||
+      "logo-play.png",
+
+    category:
+      albumTracks[0]
+        .category
+
+  };
+
+
+  currentPlaylist =
+    null;
+
+
+  $("#albumViewCover")
+    .src =
+    currentAlbum.cover;
+
+
+  $("#albumViewTitle")
+    .textContent =
+    currentAlbum.album;
+
+
+  $("#albumViewArtist")
+    .textContent =
+    currentAlbum.artist;
+
+
+  $("#albumViewMeta")
+    .textContent =
+    `${currentAlbum.category} • ${albumTracks.length} ${
+      albumTracks.length ===
+      1
+        ? "faixa"
+        : "faixas"
+    }`;
+
+
+  renderAlbumTracks(
+    albumTracks
+  );
+
+
+  hideMainViews();
+
+
+  $("#librarySection")
+    .classList
+    .add(
+      "hidden"
+    );
+
+
+  $("#albumView")
+    .classList
+    .remove(
+      "hidden"
+    );
+
+
+  window.scrollTo({
+    top:
+      0,
+    behavior:
+      "smooth"
+  });
+
+}
+
+
+function renderAlbumTracks(
+  list
+) {
+
+  renderTrackList(
+    $("#albumTracks"),
+    list,
+    {
+      numbered:
+        true
+    }
+  );
+
+}
+
+
+$("#backAlbum")
+  .onclick =
+  () => {
+
+    currentAlbum =
+      null;
+
+    currentAlbumTracks =
+      [];
+
+    showHome();
+
+  };
+
+
+$("#albumPlay")
+  .onclick =
+  () => {
+
+    if (
+      !currentAlbumTracks.length
+    ) {
+      return;
+    }
+
+
+    queue =
+      [
+        ...currentAlbumTracks
+      ];
+
+
+    currentIndex =
+      0;
+
+
+    playById(
+      queue[0].id
+    );
+
+  };
+
+
+$("#albumShuffle")
+  .onclick =
+  () => {
+
+    if (
+      !currentAlbumTracks.length
+    ) {
+      return;
+    }
+
+
+    const random =
+      Math.floor(
+        Math.random() *
+        currentAlbumTracks.length
+      );
+
+
+    queue =
+      [
+        ...currentAlbumTracks
+      ];
+
+
+    currentIndex =
+      random;
+
+
+    playById(
+      queue[random].id
+    );
+
+  };
+
+
+/* =========================================================
+   TELA DA MÚSICA
+========================================================= */
+
+function openTrackView(
+  trackId,
+  previousView = "home"
+) {
+
+  const track = tracks.find(
+    item => String(item.id) === String(trackId)
+  );
+
+  if (!track) return;
+
+  currentDetailTrack = track;
+  detailPreviousView = previousView;
+
+  $("#trackViewCover").src = track.cover || "logo-play.png";
+  $("#trackViewTitle").textContent = track.title;
+  $("#trackViewArtist").textContent = track.artist;
+  $("#trackViewAlbum").textContent = track.album || track.category || "Vem Comigo Records";
+
+  const favorite = $("#trackViewFavorite");
+  favorite.textContent = isFavorite(track.id) ? "♥ Favoritado" : "♡ Favoritar";
+
+  const download = $("#trackViewDownload");
+  if (track.downloadUrl) {
+    download.href = track.downloadUrl;
+    download.setAttribute("download", `${track.artist} - ${track.title}.mp3`);
+    download.classList.remove("disabled");
+  } else {
+    download.href = "#";
+    download.removeAttribute("download");
+    download.classList.add("disabled");
+  }
+
+  hideMainViews();
+  $("#librarySection").classList.add("hidden");
+  $("#trackView").classList.remove("hidden");
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+
+$("#backTrack").onclick = () => {
+
+  $("#trackView").classList.add("hidden");
+  currentDetailTrack = null;
+
+  if (
+    detailPreviousView === "album" &&
+    currentAlbum
+  ) {
+    hideMainViews();
+    $("#albumView").classList.remove("hidden");
+  } else {
+    showHome();
+  }
+};
+
+
+$("#trackViewPlay").onclick = () => {
+
+  if (!currentDetailTrack) return;
+
+  if (
+    currentTrack &&
+    String(currentTrack.id) === String(currentDetailTrack.id)
+  ) {
+    if (audio.paused) audio.play();
+    else audio.pause();
+    return;
+  }
+
+  playById(currentDetailTrack.id);
+};
+
+
+$("#trackViewFavorite").onclick = () => {
+  if (!currentDetailTrack) return;
+  toggleFavorite(currentDetailTrack.id);
+  $("#trackViewFavorite").textContent =
+    isFavorite(currentDetailTrack.id) ? "♥ Favoritado" : "♡ Favoritar";
+};
+
+
+$("#trackViewPlaylist").onclick = () => {
+  if (!currentDetailTrack) return;
+  openPlaylistModal(currentDetailTrack.id);
+};
+
+
+$("#trackViewDownload").onclick = event => {
+  if (!currentDetailTrack || !currentDetailTrack.downloadUrl) {
+    event.preventDefault();
+  }
+};
+
+
+/* =========================================================
+   MEDIA SESSION
+========================================================= */
+
+function updateMediaSession() {
+
+  if (
+    !currentTrack ||
+    !(
+      "mediaSession"
+      in navigator
+    )
+  ) {
+
+    return;
+
+  }
+
+
+  navigator.mediaSession.metadata =
+    new MediaMetadata({
+
+      title:
+        currentTrack.title,
+
+      artist:
+        currentTrack.artist,
+
+      album:
+        currentTrack.album ||
+        "Vem Comigo Records",
+
+      artwork: [
+        {
+          src:
+            currentTrack.cover ||
+            "logo-play.png"
+        }
+      ]
+
     });
 
-    if(error)throw error;
+}
 
-    $('reelImage').value='';
-    $('selectedSoundUrl').value='';$('selectedSoundTitle').value='';$('selectedSoundLabel').textContent='Adicionar música';
-    $('reelCaption').value='';
-    $('reelMsg').textContent='Reels publicado!';
-    $('reelCreator').classList.add('hidden');
-    await loadReels();
-  }catch(e){
-    $('reelMsg').textContent=e.message;
-  }
-};
 
-async function loadReels(){
-  const {data:reels,error}=await sb
-    .from('reels')
-    .select('id,user_id,caption,image_url,audio_url,created_at,profiles!reels_user_id_fkey(display_name,avatar_url)')
-    .order('created_at',{ascending:false})
-    .limit(50);
+if (
+  "mediaSession"
+  in navigator
+) {
 
-  if(error){
-    $('reelsList').innerHTML=`<div class="card">${esc(error.message)}</div>`;
-    return;
-  }
+  navigator.mediaSession
+    .setActionHandler(
+      "play",
+      () =>
+        audio.play()
+    );
 
-  const ids=(reels||[]).map(x=>x.id);
 
-  const {data:likes}=ids.length
-    ? await sb.from('reel_likes').select('reel_id,user_id').in('reel_id',ids)
-    : {data:[]};
+  navigator.mediaSession
+    .setActionHandler(
+      "pause",
+      () =>
+        audio.pause()
+    );
 
-  const {data:comments}=ids.length
-    ? await sb.from('reel_comments')
-        .select('id,reel_id,user_id,content,created_at,profiles!reel_comments_user_id_fkey(display_name)')
-        .in('reel_id',ids)
-        .order('created_at')
-    : {data:[]};
 
-  $('reelsList').innerHTML=(reels||[]).map(r=>{
-    const rl=(likes||[]).filter(x=>x.reel_id===r.id);
-    const liked=rl.some(x=>x.user_id===me.id);
-    const rc=(comments||[]).filter(x=>x.reel_id===r.id);
+  navigator.mediaSession
+    .setActionHandler(
+      "nexttrack",
+      nextTrack
+    );
 
-    return `
-      <article class="reel-full" id="reel-${r.id}" data-audio="${esc(r.audio_url||'')}">
-        <img class="reel-full-bg" src="${esc(r.image_url)}" alt="Reels">
 
-        <div class="reel-topbar">
-          <button class="reel-back" onclick="go('inicio')">‹</button>
-          <strong>Reels</strong>
-          <button class="reel-camera" onclick="toggleReelCreator()">＋</button>
-        </div>
+  navigator.mediaSession
+    .setActionHandler(
+      "previoustrack",
+      previousTrack
+    );
 
-        <div class="reel-right-actions">
-          <button class="${liked?'on':''}" onclick="toggleReelLike(${r.id},${liked})">
-            <span>♡</span><small>${rl.length}</small>
-          </button>
+}
 
-          <button onclick="$('rc-${r.id}').focus()">
-            <span>💬</span><small>${rc.length}</small>
-          </button>
 
-          <button onclick="shareReel(${r.id})">
-            <span>↗</span><small>Compartilhar</small>
-          </button>
+/* =========================================================
+   CARREGAR SUPABASE
+========================================================= */
 
-          ${r.audio_url ? `
-          <button class="reel-music-btn" onclick="toggleReelSound(this,'${esc(r.audio_url)}')">
-            <span>♫</span><small>Som</small>
-          </button>` : ''}
-        </div>
+async function loadCatalog() {
 
-        <div class="reel-bottom-info">
-          <div class="reel-user-row">
-            <img class="reel-avatar" src="${esc(r.profiles?.avatar_url||'./icon-192.png')}" alt="">
-            <strong>${esc(r.profiles?.display_name||'Membro')}</strong>
-          </div>
-
-          <div class="reel-caption">${esc(r.caption||'')}</div>
-
-          ${r.audio_url ? `
-            <div class="reel-music-label">♫ Som Vem+</div>
-          ` : ''}
-
-          <div class="reel-comment-entry">
-            <input id="rc-${r.id}" maxlength="500" placeholder="Comentar...">
-            <button onclick="addReelComment(${r.id})">Enviar</button>
-          </div>
-
-          ${rc.length ? `
-            <div class="reel-comments-mini">
-              ${rc.slice(-2).map(c=>`<div><b>${esc(c.profiles?.display_name||'Membro')}</b> ${esc(c.content)}</div>`).join('')}
-            </div>
-          ` : ''}
-        </div>
-      </article>
+  $("#catalog")
+    .innerHTML =
+    `
+    <div class="empty">
+      Carregando músicas...
+    </div>
     `;
-  }).join('') || '<div class="empty">Ainda não há Reels. Toque no + para criar o primeiro.</div>';
 
-  setupReelAutoplay();
-}
-window.toggleReelLike=async(reelId,on)=>{
-  if(on){
-    await sb.from('reel_likes').delete().eq('reel_id',reelId).eq('user_id',me.id);
-  }else{
-    const {error}=await sb.from('reel_likes').insert({reel_id:reelId,user_id:me.id});
-    if(error)return alert(error.message);
+
+  try {
+
+    const response =
+      await fetch(
+
+        `${SUPABASE_URL}/rest/v1/tracks?select=*&order=created_at.asc`,
+
+        {
+
+          headers: {
+
+            apikey:
+              SUPABASE_ANON_KEY
+
+          }
+
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        data.message ||
+        "Não foi possível carregar o catálogo."
+      );
+
+    }
+
+
+    tracks =
+      data.map(
+        normalizeTrack
+      );
+
+
+    filteredTracks =
+      [
+        ...tracks
+      ];
+
+
+    renderArtists();
+
+    renderAlbums();
+
+    renderCatalog(
+      tracks
+    );
+
+    renderFavorites();
+
+    renderPlaylists();
+
+    updateRepeatButton();
+
+    updateFavoriteButton();
+
+    updateDownloadButton();
+
+
+  } catch (error) {
+
+    console.error(
+      error
+    );
+
+
+    $("#catalog")
+      .innerHTML =
+      `
+      <div class="empty">
+        Não foi possível carregar o catálogo.
+      </div>
+      `;
+
   }
-  await loadReels();
-};
 
-window.addReelComment=async(reelId)=>{
-  const input=$('rc-'+reelId);
-  const content=input.value.trim();
-  if(!content)return;
-
-  const {error}=await sb.from('reel_comments').insert({
-    reel_id:reelId,
-    user_id:me.id,
-    content
-  });
-
-  if(error)return alert(error.message);
-
-  input.value='';
-  await loadReels();
-};
-
-window.shareReel=async(id)=>{
-  const url=location.origin+location.pathname+'#reel-'+id;
-  if(navigator.share){
-    try{
-      await navigator.share({title:'Reels Vem+',url});
-      return;
-    }catch{}
-  }
-  await navigator.clipboard?.writeText(url);
-  alert('Link do Reels copiado!');
-};
-
-if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});const {data:{session}}=await sb.auth.getSession();await start(session);sb.auth.onAuthStateChange((_e,s)=>setTimeout(()=>start(s),0));
-
-function bindPrettyFileInput(inputId,labelId,emptyText){
-  const input=document.getElementById(inputId);
-  const label=document.getElementById(labelId);
-  if(!input||!label)return;
-  input.addEventListener('change',()=>{
-    const file=input.files?.[0];
-    label.textContent=file ? file.name : emptyText;
-  });
 }
 
-bindPrettyFileInput('postImage','postImageLabel','Foto');
-bindPrettyFileInput('testimonyImage','testimonyImageLabel','Adicionar foto');
-bindPrettyFileInput('podFile','podFileLabel','Adicionar áudio MP3');
-bindPrettyFileInput('songFile','songFileLabel','Adicionar louvor MP3');
-bindPrettyFileInput('pAvatarFile','pAvatarFileLabel','Escolher foto do perfil');
+
+
+
+document.addEventListener("click", event => {
+  if (!event.target.closest(".actions")) {
+    document.querySelectorAll(".track-more-menu").forEach(menu => menu.classList.add("hidden"));
+  }
+});
+/* =========================================================
+   INICIAR
+========================================================= */
+
+loadCatalog();
