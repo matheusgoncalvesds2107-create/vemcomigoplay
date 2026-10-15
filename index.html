@@ -1,163 +1,935 @@
 <!doctype html>
 <html lang="pt-BR">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#081a33">
-<title>Vem Comigo+</title>
-<link rel="manifest" href="./manifest.webmanifest">
-<link rel="stylesheet" href="./style.css">
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1,viewport-fit=cover"
+  >
+
+  <meta
+    name="theme-color"
+    content="#020812"
+  >
+
+  <title>Vem Comigo PLAY</title>
+
+  <meta
+    name="description"
+    content="Vem Comigo PLAY — músicas e podcasts da Vem Comigo Records."
+  >
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
 </head>
+
 <body>
-<div id="auth" class="auth">
-  <div class="authbox">
-    <img src="./assets/logo-vem-comigo-plus.png" class="auth-logo" alt="Vem Comigo+">
-    <h1>Vem Comigo+</h1>
-    <p>Conectando corações na fé 🙏✨</p>
-    <input id="authName" class="field" placeholder="Seu nome">
-    <input id="authEmail" type="email" class="field" placeholder="E-mail">
-    <input id="authPass" type="password" class="field" placeholder="Senha (mínimo 6)">
-    <div class="row"><button class="btn grow" onclick="login()">Entrar</button><button class="btn alt grow" onclick="signup()">Criar conta</button></div>
-    <div id="authMsg" class="muted"></div>
-  </div>
-</div>
 
-<div id="app" class="wrap hidden">
-<header class="top">
-  <div class="brand"><img src="./assets/logo-vem-comigo-plus.png" alt="Vem Comigo+"><strong>Vem Comigo+</strong></div>
-  <div class="user">
-    <button class="iconbtn" onclick="go('notificacoes')">🔔 <span id="notifCount" class="badge hidden">0</span></button>
-    <img id="topAvatar" class="ava" alt="">
-    <button class="iconbtn" onclick="logout()">Sair</button>
-  </div>
-</header>
+  <!-- =====================================================
+       TOPO
+  ====================================================== -->
 
-<section id="inicio" class="page active">
-  <div class="stories">
-    <button onclick="go('oracoes')"><span>🙏</span><small>Orações</small></button>
-    <button onclick="go('reels')"><span>▶</span><small>Reels</small></button>
-    <button onclick="go('podcast')"><span>🎙️</span><small>Podcast</small></button>
-    <button onclick="go('testemunhos')"><span>✨</span><small>Testemunhos</small></button>
-    <button onclick="go('palavra')"><span>📖</span><small>Palavra</small></button>
-    <button onclick="go('louvores')"><span>🎵</span><small>Louvores</small></button>
-  </div>
-  <div class="card composer"><h3>✨ Praça da Família</h3><textarea id="postText" class="field" rows="3" maxlength="1000" placeholder="Compartilhe uma mensagem..."></textarea><div class="row"><label class="mini-file-picker">
-        <input id="postImage" type="file" accept="image/*" hidden>
-        <span class="mini-plus">＋</span>
-        <span id="postImageLabel">Foto</span>
-      </label><button class="btn" onclick="createPost()">Publicar</button></div><div id="postMsg" class="muted"></div></div>
-  <div id="feed"></div>
-</section>
+  <header class="topbar">
 
-<section id="oracoes" class="page">
-  <div class="card"><h3>🙏 Pedidos de Oração</h3><textarea id="prayerText" class="field" rows="3" maxlength="1000" placeholder="Escreva seu pedido de oração..."></textarea><button class="btn" onclick="createPrayer()">Publicar pedido</button></div>
-  <div id="prayerList"></div>
-</section>
+    <div class="brand">
 
-<section id="testemunhos" class="page">
-  <div class="card"><h3>✨ Testemunhos</h3><textarea id="testimonyText" class="field" rows="3" maxlength="1500" placeholder="Conte o que Deus fez na sua vida..."></textarea><label class="mini-file-picker wide-picker">
-        <input id="testimonyImage" type="file" accept="image/*" hidden>
-        <span class="mini-plus">＋</span>
-        <span id="testimonyImageLabel">Adicionar foto</span>
-      </label><button class="btn" onclick="createTestimony()">Publicar testemunho</button><div id="testimonyMsg" class="muted"></div></div>
-  <div id="testimonyList"></div>
-</section>
+      <img
+        src="logo-play.png"
+        alt="Vem Comigo PLAY"
+      >
 
-<section id="palavra" class="page">
-  <div class="card"><h3>📖 Palavra</h3><input id="wordTitle" class="field" placeholder="Título da mensagem"><input id="wordRef" class="field" placeholder="Referência bíblica (ex.: Salmos 119:105)"><textarea id="wordText" class="field" rows="5" maxlength="2500" placeholder="Compartilhe uma palavra/devocional..."></textarea><button class="btn" onclick="createWord()">Publicar Palavra</button><div id="wordMsg" class="muted"></div></div>
-  <div id="wordList"></div>
-</section>
+      <div>
 
-<section id="podcast" class="page">
-  <div class="card"><h3>🎙️ Podcast Vem Comigo Records</h3><input id="podTitle" class="field" placeholder="Título do episódio"><input id="podGuest" class="field" placeholder="Convidado / artista"><textarea id="podDesc" class="field" rows="2" placeholder="Descrição"></textarea><label class="mini-file-picker wide-picker">
-        <input id="podFile" type="file" accept="audio/*,.mp3" hidden>
-        <span class="mini-plus">＋</span>
-        <span id="podFileLabel">Adicionar áudio MP3</span>
-      </label><button class="btn" onclick="createPodcast()">Enviar episódio</button><div id="podMsg" class="muted"></div></div>
-  <div id="podcastList"></div>
-</section>
+        <strong>
+          Vem Comigo PLAY
+        </strong>
 
-<section id="louvores" class="page">
-  <div class="card"><h3>🎵 Louvores</h3><input id="songTitle" class="field" placeholder="Nome do louvor"><input id="songArtist" class="field" placeholder="Artista"><label class="mini-file-picker wide-picker">
-        <input id="songFile" type="file" accept="audio/*,.mp3" hidden>
-        <span class="mini-plus">＋</span>
-        <span id="songFileLabel">Adicionar louvor MP3</span>
-      </label><button class="btn" onclick="createSong()">Enviar louvor</button><div id="songMsg" class="muted"></div></div>
-  <div id="songList"></div>
-</section>
+        <span>
+          Vem Comigo Records
+        </span>
 
+      </div>
 
-<section id="reels" class="page">
-  <div class="reels-head">
-    <div>
-      <span class="eyebrow">REELS VEM+</span>
-      <h3>Momentos com fé e música</h3>
     </div>
-    <button class="reels-plus" onclick="toggleReelCreator()">＋</button>
-  </div>
 
-  <div id="reelCreator" class="card hidden">
-    <h3>Criar Reels</h3>
 
-    <label class="plus-picker">
-      <input id="reelImage" type="file" accept="image/*" hidden>
-      <span class="plus-circle">＋</span>
-      <div>
-        <strong>Adicionar foto</strong>
-        <small>Escolha uma imagem para o seu Reels</small>
-      </div>
-    </label>
+    <div class="top-actions">
 
-    <button type="button" class="plus-picker sound-open" onclick="openSoundPicker()">
-      <span class="plus-circle">♫</span>
-      <div>
-        <strong id="selectedSoundLabel">Adicionar música</strong>
-        <small>Escolha um Som Vem+</small>
-      </div>
+      <button
+        id="libraryToggle"
+        class="iconbtn"
+        aria-label="Minha Biblioteca"
+        title="Minha Biblioteca"
+      >
+        ♡
+      </button>
+
+      <button
+        id="searchToggle"
+        class="iconbtn"
+        aria-label="Buscar"
+        title="Buscar"
+      >
+        ⌕
+      </button>
+
+    </div>
+
+  </header>
+
+
+  <!-- =====================================================
+       BUSCA
+  ====================================================== -->
+
+  <section
+    id="searchBox"
+    class="searchbox hidden"
+  >
+
+    <input
+      id="searchInput"
+      type="search"
+      placeholder="Buscar música, artista ou álbum"
+    >
+
+  </section>
+
+
+  <!-- =====================================================
+       CATEGORIAS
+  ====================================================== -->
+
+  <nav
+    class="chips"
+    aria-label="Categorias"
+  >
+
+    <button
+      class="active"
+      data-cat="Todos"
+    >
+      Tudo
     </button>
 
-    <input id="selectedSoundUrl" type="hidden">
-    <input id="selectedSoundTitle" type="hidden">
+    <button data-cat="Adoração">
+      Adoração
+    </button>
 
-    <div id="soundPicker" class="sound-picker hidden">
-      <div class="sound-picker-head">
-        <div>
-          <span class="eyebrow">SONS VEM+</span>
-          <h3>Escolha uma música</h3>
+    <button data-cat="Sertanejo Gospel">
+      Sertanejo
+    </button>
+
+    <button data-cat="Forró Gospel">
+      Forró
+    </button>
+
+    <button data-cat="Arrocha Gospel">
+      Arrocha
+    </button>
+
+    <button data-cat="Seresta Gospel">
+      Seresta
+    </button>
+
+    <button data-cat="Pop Worship">
+      Pop Worship
+    </button>
+
+    <button data-cat="Christian Pop">
+      Christian Pop
+    </button>
+
+    <button data-cat="Acoustic Worship">
+      Acoustic Worship
+    </button>
+
+    <button data-cat="Bachata Gospel">
+      Bachata Gospel
+    </button>
+
+    <button data-cat="Gospel Vaqueiro">
+      Gospel Vaqueiro
+    </button>
+
+    <button data-cat="Podcasts">
+      Podcasts
+    </button>
+
+  </nav>
+
+
+  <main>
+
+    <!-- =====================================================
+         HOME
+    ====================================================== -->
+
+    <section
+      id="homeHero"
+      class="hero"
+    >
+
+      <small>
+        CATÁLOGO OFICIAL
+      </small>
+
+      <h1>
+        Vem Comigo
+        <br>
+        <em>PLAY</em>
+      </h1>
+
+      <p>
+        Músicas, artistas e podcasts
+        da Vem Comigo Records.
+      </p>
+
+
+      <div class="hero-actions">
+
+        <button id="heroPlay">
+          ▶ Ouvir agora
+        </button>
+
+        <button
+          id="heroShuffle"
+          class="secondary"
+        >
+          ⇄ Aleatório
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         MINHA BIBLIOTECA
+    ====================================================== -->
+
+    <section
+      id="librarySection"
+      class="section hidden"
+    >
+
+      <div class="library-header">
+
+        <button
+          id="closeLibrary"
+          class="album-back"
+        >
+          ← Voltar
+        </button>
+
+        <small>
+          MINHA BIBLIOTECA
+        </small>
+
+        <h1>
+          Sua música
+        </h1>
+
+        <p>
+          Favoritos e playlists salvos neste aparelho.
+        </p>
+
+      </div>
+
+
+      <div class="library-tabs">
+
+        <button
+          id="favoritesTab"
+          class="library-tab active"
+        >
+          ❤️ Favoritos
+        </button>
+
+        <button
+          id="playlistsTab"
+          class="library-tab"
+        >
+          ♪ Playlists
+        </button>
+
+      </div>
+
+
+      <!-- FAVORITOS -->
+
+      <div
+        id="favoritesView"
+        class="library-view"
+      >
+
+        <div class="section-head">
+
+          <div>
+
+            <small>
+              FAVORITOS
+            </small>
+
+            <h2>
+              Músicas que você curtiu
+            </h2>
+
+          </div>
+
+          <button id="playFavorites">
+            ▶ Tocar
+          </button>
+
         </div>
-        <button type="button" class="sound-close" onclick="closeSoundPicker()">×</button>
+
+
+        <div
+          id="favoritesList"
+          class="tracklist"
+        >
+
+          <div class="empty">
+            Você ainda não adicionou favoritos.
+          </div>
+
+        </div>
+
       </div>
-      <div id="soundList" class="sound-list">
-        <div class="empty">Carregando sons...</div>
+
+
+      <!-- PLAYLISTS -->
+
+      <div
+        id="playlistsView"
+        class="library-view hidden"
+      >
+
+        <div class="section-head">
+
+          <div>
+
+            <small>
+              PLAYLISTS
+            </small>
+
+            <h2>
+              Suas playlists
+            </h2>
+
+          </div>
+
+          <button id="createPlaylistButton">
+            + Nova
+          </button>
+
+        </div>
+
+
+        <div
+          id="playlistsGrid"
+          class="albums-grid"
+        >
+
+          <div class="empty">
+            Nenhuma playlist criada.
+          </div>
+
+        </div>
+
       </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         TELA DE PLAYLIST
+    ====================================================== -->
+
+    <section
+      id="playlistView"
+      class="album-view hidden"
+    >
+
+      <button
+        id="backPlaylist"
+        class="album-back"
+      >
+        ← Minhas playlists
+      </button>
+
+
+      <div class="album-header">
+
+        <div class="playlist-big-icon">
+          ♪
+        </div>
+
+
+        <div class="album-hero-info">
+
+          <small>
+            PLAYLIST
+          </small>
+
+          <h2 id="playlistViewTitle">
+            Minha Playlist
+          </h2>
+
+          <p id="playlistViewMeta">
+            0 músicas
+          </p>
+
+
+          <div class="album-actions">
+
+            <button
+              id="playlistPlay"
+              class="album-main-button"
+            >
+              ▶ Tocar playlist
+            </button>
+
+            <button
+              id="playlistShuffle"
+              class="album-secondary-button"
+            >
+              ⇄ Aleatório
+            </button>
+
+            <button
+              id="deletePlaylist"
+              class="album-secondary-button"
+            >
+              🗑 Excluir playlist
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="album-track-area">
+
+        <div
+          id="playlistTracks"
+          class="tracklist"
+        ></div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         ARTISTAS
+    ====================================================== -->
+
+    <section
+      id="artistsSection"
+      class="section"
+    >
+
+      <div class="section-head">
+
+        <div>
+
+          <small>
+            ARTISTAS
+          </small>
+
+          <h2>
+            Artistas
+          </h2>
+
+        </div>
+
+      </div>
+
+
+      <div
+        id="artistsGrid"
+        class="albums-grid"
+      ></div>
+
+    </section>
+
+
+    <!-- =====================================================
+         ÁLBUNS
+    ====================================================== -->
+
+    <section
+      id="albumsSection"
+      class="section"
+    >
+
+      <div class="section-head">
+
+        <div>
+
+          <small>
+            ÁLBUNS
+          </small>
+
+          <h2>
+            Álbuns
+          </h2>
+
+        </div>
+
+      </div>
+
+
+      <div
+        id="albumsGrid"
+        class="albums-grid"
+      ></div>
+
+    </section>
+
+
+    <!-- =====================================================
+         TELA DO ÁLBUM
+    ====================================================== -->
+
+    <section
+      id="albumView"
+      class="album-view hidden"
+    >
+
+      <button
+        id="backAlbum"
+        class="album-back"
+      >
+        ← Voltar
+      </button>
+
+
+      <div class="album-header">
+
+        <div class="album-hero-cover">
+
+          <img
+            id="albumViewCover"
+            src="logo-play.png"
+            alt="Capa do álbum"
+          >
+
+        </div>
+
+
+        <div class="album-hero-info">
+
+          <small>
+            ÁLBUM
+          </small>
+
+          <h2 id="albumViewTitle">
+            Álbum
+          </h2>
+
+          <h3 id="albumViewArtist">
+            Artista
+          </h3>
+
+          <p id="albumViewMeta">
+            Categoria • 0 faixas
+          </p>
+
+
+          <div class="album-actions">
+
+            <button
+              id="albumPlay"
+              class="album-main-button"
+            >
+              ▶ Tocar álbum
+            </button>
+
+            <button
+              id="albumShuffle"
+              class="album-secondary-button"
+            >
+              ⇄ Aleatório
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="album-track-area">
+
+        <div class="section-head">
+
+          <div>
+
+            <small>
+              FAIXAS
+            </small>
+
+            <h2>
+              Músicas do álbum
+            </h2>
+
+          </div>
+
+        </div>
+
+
+        <div
+          id="albumTracks"
+          class="tracklist"
+        ></div>
+
+      </div>
+
+    </section>
+
+    <!-- =====================================================
+         TELA DA MÚSICA
+    ====================================================== -->
+
+    <section
+      id="trackView"
+      class="track-view hidden"
+    >
+
+      <button
+        id="backTrack"
+        class="album-back"
+      >
+        ← Voltar
+      </button>
+
+      <div class="track-view-card">
+
+        <div class="track-view-cover">
+          <img
+            id="trackViewCover"
+            src="logo-play.png"
+            alt="Capa da música"
+          >
+        </div>
+
+        <div class="track-view-info">
+          <small>TOCANDO AGORA</small>
+          <h2 id="trackViewTitle">Música</h2>
+          <h3 id="trackViewArtist">Artista</h3>
+          <p id="trackViewAlbum">Álbum</p>
+
+          <div class="track-view-actions">
+            <button id="trackViewPlay" class="album-main-button">▶ Tocar música</button>
+            <button id="trackViewFavorite" class="album-secondary-button">♡ Favoritar</button>
+            <button id="trackViewPlaylist" class="album-secondary-button">＋ Playlist</button>
+            <a id="trackViewDownload" class="album-secondary-button track-view-download" href="#" download>⇩ Baixar</a>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+
+    <!-- =====================================================
+         DESTAQUES
+    ====================================================== -->
+
+    <section
+      id="featuredSection"
+      class="section"
+    >
+
+      <div class="section-head">
+
+        <div>
+
+          <small>
+            DESTAQUES
+          </small>
+
+          <h2>
+            Louvores em destaque
+          </h2>
+
+        </div>
+
+        <button id="playAll">
+          Tocar tudo
+        </button>
+
+      </div>
+
+
+      <div
+        id="catalog"
+        class="tracklist"
+      ></div>
+
+    </section>
+
+  </main>
+
+
+  <!-- =====================================================
+       MODAL ADICIONAR À PLAYLIST
+  ====================================================== -->
+
+  <div
+    id="playlistModal"
+    class="playlist-modal hidden"
+  >
+
+    <div class="playlist-modal-box">
+
+      <div class="playlist-modal-head">
+
+        <div>
+
+          <small>
+            VEM COMIGO PLAY
+          </small>
+
+          <h2>
+            Adicionar à playlist
+          </h2>
+
+        </div>
+
+
+        <button
+          id="closePlaylistModal"
+          class="modal-close"
+        >
+          ✕
+        </button>
+
+      </div>
+
+
+      <div
+        id="playlistModalTrack"
+        class="playlist-modal-track"
+      >
+        Escolha uma música.
+      </div>
+
+
+      <div
+        id="playlistChoices"
+        class="playlist-choices"
+      ></div>
+
+
+      <button
+        id="newPlaylistFromModal"
+        class="primary-action"
+      >
+        + Criar nova playlist
+      </button>
+
     </div>
 
-    <textarea id="reelCaption" class="field" rows="3" maxlength="500" placeholder="Escreva uma legenda..."></textarea>
-    <button class="btn" onclick="createReel()">Publicar Reels</button>
-    <div id="reelMsg" class="muted"></div>
   </div>
 
-  <div id="reelsList"></div>
-</section>
 
-<section id="pessoas" class="page"><div class="card"><h3>🔎 Buscar pessoas</h3><input id="peopleSearch" class="field" placeholder="Buscar por nome..." oninput="loadPeople()"></div><div id="peopleList"></div></section>
-<section id="mensagens" class="page"><div class="card"><h3>💬 Mensagens</h3><select id="chatUser" class="field" onchange="loadChat()"><option value="">Escolha uma pessoa</option></select><div id="chat" class="chat"></div><div class="row"><input id="chatText" class="field grow" maxlength="1000" placeholder="Digite uma mensagem..."><button class="btn" onclick="sendMessage()">Enviar</button></div></div></section>
-<section id="notificacoes" class="page"><div class="card"><div class="row"><h3 class="grow">🔔 Notificações</h3><button class="btn alt" onclick="markAllRead()">Marcar lidas</button></div></div><div id="notifList"></div></section>
-<section id="perfil" class="page"><div class="card profilehero"><img id="profileAvatar" class="ava big" alt=""><h2 id="profileName">Meu Perfil</h2><div id="profileCounts" class="muted"></div></div><div class="card"><h3>Editar perfil</h3><input id="pName" class="field" placeholder="Nome"><textarea id="pBio" class="field" rows="3" placeholder="Bio"></textarea><input id="pVerse" class="field" placeholder="Versículo favorito"><label class="mini-file-picker wide-picker">
-        <input id="pAvatarFile" type="file" accept="image/*" hidden>
-        <span class="mini-plus">＋</span>
-        <span id="pAvatarFileLabel">Escolher foto do perfil</span>
-      </label><button class="btn" onclick="saveProfile()">Salvar perfil</button><div id="profileMsg" class="muted"></div></div></section>
+  <!-- =====================================================
+       PLAYER FIXO
+  ====================================================== -->
 
-<nav class="nav">
-<button class="active" onclick="go('inicio',this)"><span>⌂</span>Início</button>
-<button onclick="go('reels',this)"><span>▶</span>Reels</button>
-<button onclick="go('pessoas',this)"><span>⌕</span>Buscar</button>
-<button onclick="go('mensagens',this)"><span>✉</span>Mensagens</button>
-<button onclick="go('notificacoes',this)"><span>♡</span>Avisos</button>
-<button onclick="go('perfil',this)"><span>◉</span>Perfil</button>
-</nav>
-</div>
-<script src="./config.js"></script>
-<script type="module" src="./app.js"></script>
-</body></html>
+  <footer
+    class="player"
+    id="player"
+  >
+
+    <!-- CAPA -->
+
+    <img
+      id="cover"
+      src="logo-play.png"
+      alt="Capa"
+    >
+
+
+    <!-- INFORMAÇÕES -->
+
+    <div class="player-meta">
+
+      <small id="kind">
+        VEM COMIGO PLAY
+      </small>
+
+      <strong id="title">
+        Escolha uma faixa
+      </strong>
+
+      <span id="artist">
+        Player próprio do site
+      </span>
+
+
+      <div class="progress">
+
+        <span id="cur">
+          0:00
+        </span>
+
+        <input
+          id="seek"
+          type="range"
+          min="0"
+          max="100"
+          value="0"
+          aria-label="Progresso"
+        >
+
+        <span id="dur">
+          0:00
+        </span>
+
+      </div>
+
+    </div>
+
+
+    <!-- ANTERIOR -->
+
+    <button
+      id="prev"
+      class="round"
+      aria-label="Anterior"
+      title="Anterior"
+    >
+      ⏮
+    </button>
+
+
+    <!-- PLAY -->
+
+    <button
+      id="play"
+      class="round main"
+      aria-label="Tocar"
+      title="Tocar"
+    >
+      ▶
+    </button>
+
+
+    <!-- PRÓXIMA -->
+
+    <button
+      id="next"
+      class="round"
+      aria-label="Próxima"
+      title="Próxima"
+    >
+      ⏭
+    </button>
+
+
+    <!-- =================================================
+         CONTROLES EXTRAS
+    ================================================== -->
+
+    <div class="player-extra-actions">
+
+      <!-- REPETIR -->
+
+      <button
+        id="repeatButton"
+        class="player-extra-button"
+        title="Repetir"
+        aria-label="Repetir"
+      >
+        🔁
+      </button>
+
+
+      <!-- FAVORITO -->
+
+      <button
+        id="favoriteCurrent"
+        class="player-extra-button"
+        title="Adicionar aos favoritos"
+        aria-label="Favorito"
+      >
+        ♡
+      </button>
+
+
+      <!-- PLAYLIST -->
+
+      <button
+        id="playlistCurrent"
+        class="player-extra-button"
+        title="Adicionar à playlist"
+        aria-label="Adicionar à playlist"
+      >
+        ＋
+      </button>
+
+
+      <!-- DOWNLOAD -->
+
+      <a
+        id="downloadCurrent"
+        class="player-extra-button"
+        href="#"
+        download
+        title="Baixar música"
+        aria-label="Baixar música"
+      >
+        ⇩
+      </a>
+
+    </div>
+
+
+    <!-- VOLUME -->
+
+    <div class="volume">
+
+      <span>
+        🔊
+      </span>
+
+      <input
+        id="volume"
+        type="range"
+        min="0"
+        max="1"
+        step=".05"
+        value=".85"
+        aria-label="Volume"
+      >
+
+    </div>
+
+
+    <!-- ÁUDIO -->
+
+    <audio
+      id="audio"
+      preload="metadata"
+    ></audio>
+
+  </footer>
+
+
+  <script src="app.js"></script>
+
+</body>
+
+  </html>
